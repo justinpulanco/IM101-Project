@@ -1,0 +1,165 @@
+/* -------------------- General Layout -------------------- */
+:root{
+  --fb-blue: #1877f2;
+  --fb-dark: #165db6;
+  --muted: #596d7a;
+}
+
+*{box-sizing:border-box}
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(180deg,#e9eff1 0%,#f7fbff 100%);
+  color: #111;
+}
+
+.App{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.layout {
+  width:100%;
+  max-width:1100px;
+  display:flex;
+  gap:30px;
+  padding:40px;
+  align-items:stretch;
+}
+
+/* -------------------- Left hero (big logo/text) -------------------- */
+.hero{
+  flex:1.2;
+  background:transparent;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:20px 40px;
+}
+
+.hero h1{
+  color:var(--fb-blue);
+  font-size:48px;
+  margin:0 0 10px 0;
+}
+
+.hero p{
+  color:var(--muted);
+  font-size:18px;
+  line-height:1.5;
+}
+
+/* --- Hero banner with booking form --- */
+.hero-banner{
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url('') center/cover no-repeat;
+  border-radius: 12px;
+  padding: 28px;
+  color: white;
+}
+.hero-text h1{color:white;font-size:42px;margin:0}
+.hero-text p{color:rgba(255,255,255,0.9);margin-top:8px}
+
+.hero-form{margin-top:18px;background:rgba(255,255,255,0.92);padding:12px;border-radius:10px;color:#111}
+.hero-row{display:flex;gap:10px}
+.hero-row.small{margin-top:8px}
+.hero-form input{flex:1;padding:10px;border-radius:6px;border:1px solid #d6dade}
+.hero-form .cta{flex:0 0 180px;background:var(--fb-blue);color:white;border:none;padding:10px 14px;border-radius:6px;font-weight:700}
+
+/* featured cars */
+.featured-section{max-width:1100px;margin:20px auto;padding:0 20px}
+.featured-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.featured-cars{display:flex;gap:12px;flex-wrap:wrap}
+.car-card{flex:1 1 220px;background:white;padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(20,30,50,0.06);min-width:200px}
+.car-thumb{height:110px;background:linear-gradient(90deg,#eee,#ddd);border-radius:6px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:#666}
+.car-card b{display:block}
+
+
+/* -------------------- Right column with auth forms -------------------- */
+.auth-column,
+.login-container{
+  width:380px;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+/* Login box sits at the top-right (small) */
+.login-form{
+  background: white;
+  padding:16px;
+  border-radius:8px;
+  box-shadow:0 6px 18px rgba(20,30,50,0.12);
+  align-self:flex-end;
+  width:100%;
+}
+
+.login-form h2{font-size:18px;margin:0 0 12px 0;color:#111}
+
+.login-form form{display:flex;flex-direction:column;gap:8px}
+
+/* Register box centered vertically on the right column */
+.register-form{
+  background: white;
+  padding:22px;
+  border-radius:8px;
+  box-shadow:0 8px 24px rgba(20,30,50,0.12);
+  margin-top:24px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.register-form h2{font-size:20px;margin:0 0 6px 0;color:#111}
+
+/* -------------------- Inputs & Buttons -------------------- */
+input, button {
+  padding:12px 14px;
+  border-radius:6px;
+  font-size:15px;
+  width:100%;
+  border:1px solid #d6dade;
+}
+
+input:focus{outline:none;border-color:var(--fb-blue);box-shadow:0 0 0 3px rgba(24,119,242,0.08)}
+
+button{
+  background:var(--fb-blue);
+  color:white;
+  font-weight:600;
+  border:none;
+  cursor:pointer;
+}
+
+button.secondary{
+  background:#42b72a; /* green for register */
+}
+
+button:hover{filter:brightness(.96)}
+
+/* subtle link styles */
+.forgot-password a{color:var(--fb-blue);text-decoration:none}
+.forgot-password a:hover{text-decoration:underline}
+
+/* -------------------- Cars & Bookings area (below) -------------------- */
+section{
+  margin-top:28px;
+  width:100%;
+}
+
+.cars,.bookings{display:flex;flex-wrap:wrap;gap:12px}
+.car-item,.booking-item{background:white;padding:12px;border-radius:8px;box-shadow:0 4px 12px rgba(10,20,40,0.04);min-width:180px}
+
+/* -------------------- Responsive -------------------- */
+@media (max-width:900px){
+  .layout{flex-direction:column;padding:20px}
+  .auth-column{width:100%}
+  .login-form{align-self:stretch}
+}
+
+@media (max-width:600px){
+  .hero-row{flex-direction:column}
+  .hero-form .cta{width:100%}
+}
