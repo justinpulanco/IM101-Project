@@ -12,7 +12,9 @@ function App() {
   const [regPassword, setRegPassword] = useState('');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-
+  const [showForms, setShowForms] = useState(true);
+  const [activeTab, setActiveTab] = useState('login');
+  const [tabAnim, setTabAnim] = useState(false);
 
   const API = 'http://localhost:5000/api';
 
@@ -73,85 +75,130 @@ function App() {
 
   return (
     <div className="App">
+      {/* Navbar */}
+      <nav className="navbar">
+        <div className="navbar-top">
+          <div className="navbar-logo">Car2Go.</div>
+          <div className="navbar-links">
+            <a href="#home">Home</a>
+            <a href="#cars">Cars</a>
+            <a href="#reviews">Reviews</a>
+            <a href="#about">About</a>
+          </div>
+          <div className="navbar-right">
+            <button className="navbar-icon search-icon">🔍</button>
+            <button className="navbar-icon user-icon">👤</button>
+          </div>
+        </div>
+      </nav>
+
       {!isAuthenticated ? (
         <div className="layout">
           <div className="hero">
-            <div className="hero-banner">
-              <div className="hero-text">
-                <h1>Car2Go-U-Drive Car Rental Services</h1>
-                <p>Quick booking. Clean cars. Easy pick-up.</p>
-              </div>
+            <div className="hero-inner">
+              <img className="hero-car" src="/gtr.png" alt="car" />
 
-              <form className="hero-form" onSubmit={(e)=>{e.preventDefault(); alert('Quote requested')}}>
-                <div className="hero-row">
-                  <input type="text" placeholder="Pick-up Location" required />
-                  <input type="date" placeholder="Pick-up Date" required />
-                  <input type="date" placeholder="Return Date" required />
-                </div>
-                <div className="hero-row small">
-                  <input type="time" placeholder="Pick-up Time" />
-                  <input type="time" placeholder="Return Time" />
-                  <button className="cta">Get a Quote</button>
-                </div>
-              </form>
+              <div className="hero-search">
+                <form onSubmit={(e)=>{e.preventDefault(); alert('Search');}} className="search-form">
+                  <input type="text" placeholder="Location" required />
+                  <input type="date" placeholder="Start" required />
+                  <input type="date" placeholder="Return" required />
+                  <button className="search-btn" type="submit">🔍</button>
+                </form>
+              </div>
             </div>
           </div>
 
-          <div className="login-container">
-            {/* Login Form */}
-            <div className="login-form">
-              <h2>Login</h2>
-              <form onSubmit={handleLogin}>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  required
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  required
-                />
-                <button type="submit">Login</button>
-              </form>
-              <div className="forgot-password">
-                <button type="button" className="link">Forgotten password?</button>
+          <div className={`modal-overlay ${showForms ? 'visible' : 'hidden'}`}>
+            <div className={`modal-content ${tabAnim ? 'tab-anim' : ''}`}>
+              <button className="modal-close" onClick={() => setShowForms(false)}>✕</button>
+              
+              <div className="modal-tabs">
+                <button
+                  className={`modal-tab ${activeTab === 'login' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('login');
+                    setTabAnim(true);
+                    setTimeout(() => setTabAnim(false), 360);
+                  }}
+                >
+                  Login
+                </button>
+                <button
+                  className={`modal-tab ${activeTab === 'register' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('register');
+                    setTabAnim(true);
+                    setTimeout(() => setTabAnim(false), 360);
+                  }}
+                >
+                  Register
+                </button>
               </div>
-            </div>
 
-            {/* Register Form */}
-            <div className="register-form">
-              <h2>Register</h2>
-              <form onSubmit={handleRegister}>
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={regName}
-                  onChange={(e) => setRegName(e.target.value)}
-                  required
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={regEmail}
-                  onChange={(e) => setRegEmail(e.target.value)}
-                  required
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                  required
-                />
-                <button type="submit" className="secondary">Register</button>
-              </form>
+              {/* Login Form */}
+              {activeTab === 'login' && (
+                <div className="modal-form login-form">
+                  <h2>Login</h2>
+                  <form onSubmit={handleLogin}>
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      required
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                    />
+                    <button type="submit">Login</button>
+                  </form>
+                  <div className="forgot-password">
+                    <button type="button" className="link">Forgotten password?</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Register Form */}
+              {activeTab === 'register' && (
+                <div className="modal-form register-form">
+                  <h2>Register</h2>
+                  <form onSubmit={handleRegister}>
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      required
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      required
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      required
+                    />
+                    <button type="submit" className="secondary">Register</button>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
+
+          <button className="modal-trigger" onClick={() => setShowForms(true)}>
+            Sign In
+          </button>
         </div>
       ) : (
   <Dashboard apiBase={API} token={token} user={user} onLogout={() => { setToken(''); setUser(null); setIsAuthenticated(false); }} />
