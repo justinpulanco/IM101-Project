@@ -68,12 +68,34 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
 
   return (
     <div className="dashboard">
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-        <h2>Dashboard</h2>
-        <div>
-          <button onClick={onLogout} style={{marginRight:8}}>Logout</button>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}} />
+
+      {/* Top Rentals Section */}
+      <section className="top-rentals">
+        <h2>Our Top Rentals</h2>
+        <p>Discover our top car rentals, providing comfort, affordability, and convenience to make your next journey smooth and enjoyable!</p>
+        <div className="rentals-grid">
+          {cars.length > 0 ? (
+            cars.map((car) => (
+              <div key={car.id || car._id} className="rental-card">
+                <div className="rental-image-wrapper">
+                  <img src={car.image || '/gtr.png'} alt={car.model || 'car'} className="rental-image" />
+                  <button className="rental-heart">♥</button>
+                </div>
+                <div className="rental-info">
+                  <p className="rental-type">{car.type || 'Sedan'}</p>
+                  <h3 className="rental-name">{car.make ? `${car.make} ${car.model || ''}` : car.model || 'Car'}</h3>
+                  <p className="rental-transmission">{car.transmission || 'Automatic'}</p>
+                  <p className="rental-price">₱{car.price_per_day || car.price || '—'}/day</p>
+                  <button className="rental-btn">Rent</button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p style={{textAlign:'center',width:'100%'}}>No cars available</p>
+          )}
         </div>
-      </div>
+      </section>
 
       <section>
         <h3>Cars</h3>
