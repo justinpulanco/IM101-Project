@@ -5,10 +5,6 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
   const [cars, setCars] = useState([]);
   const [bookings, setBookings] = useState([]);
 
-  const [carId, setCarId] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [totalPrice, setTotalPrice] = useState('');
 
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -106,34 +102,6 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleBooking = async (e) => {
-    e.preventDefault();
-    try {
-      if (!user || !user.id) {
-        alert('User not found. Please log in again.');
-        return;
-      }
-
-      const res = await fetch(`${apiBase}/bookings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
-        body: JSON.stringify({
-          user_id: Number(user.id),
-          car_id: Number(carId),
-          start_date: startDate,
-          end_date: endDate,
-          total_price: Number(totalPrice),
-        }),
-      });
-      const data = await res.json();
-      alert(data.message || JSON.stringify(data));
-      await loadBookings();
-    } catch (err) {
-      console.error(err);
-      alert('Booking failed');
-    }
-  };
-
   return (
     <div className="dashboard">
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}} />
@@ -181,19 +149,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
         </div>
       </section>
 
-      <section style={{marginTop:20}}>
-        <h3>Book a Car</h3>
-        <form onSubmit={handleBooking} style={{maxWidth:420,display:'grid',gap:8}}>
-          <input type="number" placeholder="Car ID" value={carId} onChange={(e)=>setCarId(e.target.value)} required />
-          <input type="date" placeholder="Start Date" value={startDate} onChange={(e)=>setStartDate(e.target.value)} required />
-          <input type="date" placeholder="End Date" value={endDate} onChange={(e)=>setEndDate(e.target.value)} required />
-          <input type="number" placeholder="Total Price" value={totalPrice} onChange={(e)=>setTotalPrice(e.target.value)} required />
-          <div style={{display:'flex',gap:8}}>
-            <button type="submit">Book</button>
-            <button type="button" className="secondary" onClick={()=>{ setCarId(''); setStartDate(''); setEndDate(''); setTotalPrice(''); }}>Clear</button>
-          </div>
-        </form>
-      </section>
+      
 
       <section style={{marginTop:24}}>
         <h3>Your Bookings</h3>
