@@ -236,11 +236,9 @@ function App() {
             </div>
           </div>
 
-          <div className="featured-section">
-            <h3>Search Results</h3>
-            {searchResults.length === 0 ? (
-              <p className="muted">No results yet. Try a location and click search.</p>
-            ) : (
+          {searchResults.length > 0 && (
+            <div className="featured-section">
+              <h3>Search Results</h3>
               <div className="cards-grid">
                 {searchResults.map((car) => (
                   <div key={car.id || car._id} className="car-card">
@@ -253,8 +251,9 @@ function App() {
                   </div>
                 ))}
               </div>
-            )}
-          </div>
+              </div>
+            </div>
+          )}
 
           <div className={`modal-overlay ${showForms ? 'visible' : 'hidden'}`}>
             <div className={`modal-content ${tabAnim ? 'tab-anim' : ''}`}>
