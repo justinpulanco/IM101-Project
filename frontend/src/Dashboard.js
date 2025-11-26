@@ -12,6 +12,74 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
 
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
+  // All available car photos with their names from the filenames
+  const allCarPhotos = [
+    '1967 Chevrolet Camaro.png',
+    '1970 Dodge Charger.png',
+    '1993 Mazda RX-7 FD.png',
+    '1995 Honda Civic EG.png',
+    '1995 Mitsubishi Eclipse.png',
+    '1995 Toyota Supra Mk4.png',
+    '1999 Nissan Skyline GT-R R34.png',
+    '2002 Nissan Silvia S15.png',
+    '2006 Nissan 350Z.png',
+    '2008 Dodge Challenger SRT8.png',
+    'Ford Ranger.png',
+    'Honda CR-V.png',
+    'Hyundai Accent.png',
+    'Mitsubishi Xpander.webp',
+    'nissan almera.png',
+    'Toyota Vios.png',
+  ];
+
+  // Function to get clean car name from filename (remove extension)
+  const getCarNameFromFile = (filename) => {
+    return filename.replace(/\.(png|webp|jpg|jpeg)$/i, '');
+  };
+
+  // Function to get the car image path based on car name
+  const getCarImage = (car) => {
+    if (!car) return '/gtr.png';
+    
+    // Try to match car make and model with photo filename
+    const carName = car.make && car.model ? `${car.make} ${car.model}` : car.model || '';
+    
+    // Map of car names to photo filenames
+    const carPhotos = {
+      'Chevrolet Camaro': '1967 Chevrolet Camaro.png',
+      'Dodge Charger': '1970 Dodge Charger.png',
+      'Mazda RX-7': '1993 Mazda RX-7 FD.png',
+      'Honda Civic': '1995 Honda Civic EG.png',
+      'Mitsubishi Eclipse': '1995 Mitsubishi Eclipse.png',
+      'Toyota Supra': '1995 Toyota Supra Mk4.png',
+      'Nissan Skyline': '1999 Nissan Skyline GT-R R34.png',
+      'Nissan Silvia': '2002 Nissan Silvia S15.png',
+      'Nissan 350Z': '2006 Nissan 350Z.png',
+      'Dodge Challenger': '2008 Dodge Challenger SRT8.png',
+      'Ford Ranger': 'Ford Ranger.png',
+      'Honda CR-V': 'Honda CR-V.png',
+      'Hyundai Accent': 'Hyundai Accent.png',
+      'Mitsubishi Xpander': 'Mitsubishi Xpander.webp',
+      'Nissan Almera': 'nissan almera.png',
+      'Toyota Vios': 'Toyota Vios.png',
+    };
+    
+    // Check if exact match exists
+    if (carPhotos[carName]) {
+      return `/${carPhotos[carName]}`;
+    }
+    
+    // Try partial matching for make
+    for (const [photoName, fileName] of Object.entries(carPhotos)) {
+      if (carName.toLowerCase().includes(photoName.toLowerCase()) || 
+          photoName.toLowerCase().includes(carName.toLowerCase())) {
+        return `/${fileName}`;
+      }
+    }
+    
+    return '/gtr.png';
+  };
+
   const loadCars = async () => {
     try {
       const res = await fetch(`${apiBase}/cars`);
@@ -79,7 +147,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
             cars.map((car) => (
               <div key={car.id || car._id} className="rental-card">
                 <div className="rental-image-wrapper">
-                  <img src={car.image || '/gtr.png'} alt={car.model || 'car'} className="rental-image" />
+                  <img src={getCarImage(car)} alt={car.model || 'car'} className="rental-image" />
                   <button className="rental-heart">♥</button>
                 </div>
                 <div className="rental-info">
@@ -98,17 +166,16 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
       </section>
 
       <section>
-        <h3>Cars</h3>
-        <div className="cars">
-          {cars.map((car) => (
-            <div key={car.id} className="car-item">
-              <b>ID:</b> {car.id}
-              <br />
-              <b>Model:</b> {car.model}
-              <br />
-              <b>Type:</b> {car.type}
-              <br />
-              <b>₱{car.price_per_day}</b>
+        <h3>🚗 Our Car Collection</h3>
+        <div className="car-gallery">
+          {allCarPhotos.map((photo, index) => (
+            <div key={index} className="car-photo-box">
+              <div className="car-photo-image">
+                <img src={`/${photo}`} alt={getCarNameFromFile(photo)} />
+              </div>
+              <div className="car-photo-info">
+                <h4>{getCarNameFromFile(photo)}</h4>
+              </div>
             </div>
           ))}
         </div>

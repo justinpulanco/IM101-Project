@@ -2,15 +2,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 
-const queryAsync = (query, params) => {
- return new Promise((resolve, reject) => {
- db.query(query, params, (err, results) => {
- if (err) reject(err);
- resolve(results);
- });
- });
-};
-
 exports.register = async (req, res) => {
  const { name, email, password } = req.body;
  if (!name || !email || !password)
@@ -19,7 +10,7 @@ exports.register = async (req, res) => {
  if (password.length < 6) return res.status(400).json({ message: 'Password too short' });
 
  try {
- const result = await queryAsync('SELECT * FROM users WHERE email = ?', [email]);
+ const [result] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
  if (result.length > 0) return res.status(400).json({ message: 'Email exists' });
 
     if (!bcrypt) {
@@ -28,7 +19,7 @@ exports.register = async (req, res) => {
     }
     
  const hashed = await bcrypt.hash(password, 10);
- await queryAsync('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashed]);
+ await db.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashed]);
  res.status(201).json({ message: 'User registered' });
 
  } catch (error) {
@@ -42,7 +33,7 @@ exports.login = async (req, res) => {
  if (!email || !password) return res.status(400).json({ message: 'All fields required' });
 
  try {
- const results = await queryAsync('SELECT * FROM users WHERE email = ?', [email]);
+ const [results] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
  if (results.length === 0) return res.status(404).json({ message: 'User not found' });
 
  const user = results[0];
@@ -71,7 +62,7 @@ exports.login = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
  try {
- const results = await queryAsync('SELECT id, name, email, created_at FROM users');
+ const [results] = await db.query('SELECT id, name, email, created_at FROM users');
  res.json(results);
  } catch (err) {
  console.error("GET ALL USERS DB ERROR:", err);
@@ -84,7 +75,7 @@ exports.deleteUserById = async (req, res) => {
  if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
 
  try {
-  const result = await queryAsync('DELETE FROM users WHERE id = ?', [id]);
+  const [result] = await db.query('DELETE FROM users WHERE id = ?', [id]);
  if (result.affectedRows === 0) return res.status(404).json({ message: 'User not found' });
  res.json({ message: 'User deleted' });
  } catch (err) {

@@ -3,10 +3,35 @@ import React, { useState, useEffect } from 'react';
 export default function AdminDashboard({ apiBase, token, onLogout }) {
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
-  const [activeTab, setActiveTab] = useState('cars'); // 'cars' or 'users'
+  const [activeTab, setActiveTab] = useState('cars'); // 'cars', 'users', or 'add-cars'
   const [loading, setLoading] = useState(false);
 
   const authHeaders = { Authorization: `Bearer ${token}` };
+
+  // All available car photos
+  const allCarPhotos = [
+    '1967 Chevrolet Camaro.png',
+    '1970 Dodge Charger.png',
+    '1993 Mazda RX-7 FD.png',
+    '1995 Honda Civic EG.png',
+    '1995 Mitsubishi Eclipse.png',
+    '1995 Toyota Supra Mk4.png',
+    '1999 Nissan Skyline GT-R R34.png',
+    '2002 Nissan Silvia S15.png',
+    '2006 Nissan 350Z.png',
+    '2008 Dodge Challenger SRT8.png',
+    'Ford Ranger.png',
+    'Honda CR-V.png',
+    'Hyundai Accent.png',
+    'Mitsubishi Xpander.webp',
+    'nissan almera.png',
+    'Toyota Vios.png',
+  ];
+
+  // Function to get clean car name from filename
+  const getCarNameFromFile = (filename) => {
+    return filename.replace(/\.(png|webp|jpg|jpeg)$/i, '');
+  };
 
   useEffect(() => {
     loadCars();
@@ -71,6 +96,39 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
     }
   };
 
+  // Add all car photos to database
+  const handleAddAllCars = async () => {
+    if (!window.confirm(`Add ${allCarPhotos.length} cars to the database?`)) return;
+    
+    try {
+      for (const photo of allCarPhotos) {
+        const carName = getCarNameFromFile(photo);
+        const res = await fetch(`${apiBase}/cars`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders },
+          body: JSON.stringify({
+            model: carName,
+            make: carName.split(' ')[0],
+            year: new Date().getFullYear(),
+            price_per_day: 299,
+            is_available: true,
+            type: 'Sedan',
+            transmission: 'Automatic',
+            image: `/${photo}`
+          }),
+        });
+        const data = await res.json();
+        console.log(`Added: ${carName}`, data);
+      }
+      alert(`✅ All ${allCarPhotos.length} cars have been added to the database!`);
+      await loadCars();
+      setActiveTab('cars');
+    } catch (err) {
+      console.error('Error adding cars:', err);
+      alert('Error adding cars to database');
+    }
+  };
+
   return (
     <div className="admin-dashboard">
       <div className="admin-header">
@@ -90,6 +148,12 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
           onClick={() => setActiveTab('users')}
         >
           👥 Users ({users.length})
+        </button>
+        <button
+          className={`admin-tab ${activeTab === 'add-cars' ? 'active' : ''}`}
+          onClick={() => setActiveTab('add-cars')}
+        >
+          ➕ Add Cars ({allCarPhotos.length})
         </button>
       </div>
 
@@ -182,6 +246,30 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'add-cars' && (
+        <div className="admin-section">
+          <h2>🚗 Add Car Photos to Database</h2>
+          <p>Click the button below to automatically add all car photos with their names from the filenames.</p>
+          <button onClick={handleAddAllCars} className="add-cars-admin-btn">
+            ➕ Add All {allCarPhotos.length} Cars
+          </button>
+          
+          <h3 style={{marginTop: '32px', marginBottom: '16px'}}>Car Gallery Preview:</h3>
+          <div className="admin-car-gallery">
+            {allCarPhotos.map((photo, index) => (
+              <div key={index} className="admin-car-photo-box">
+                <div className="admin-car-photo-image">
+                  <img src={`/${photo}`} alt={getCarNameFromFile(photo)} />
+                </div>
+                <div className="admin-car-photo-info">
+                  <h4>{getCarNameFromFile(photo)}</h4>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

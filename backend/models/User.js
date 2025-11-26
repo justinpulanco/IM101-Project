@@ -1,14 +1,29 @@
 const db = require('../config/db');
 
 const User = {
-  getAllUsers: (callback) => {
-    db.execute('SELECT * FROM users', callback);
+  getAllUsers: async (callback) => {
+    try {
+      const [results] = await db.query('SELECT * FROM users');
+      callback(null, results);
+    } catch (err) {
+      callback(err, null);
+    }
   },
-  getUserById: (id, callback) => {
-    db.execute('SELECT * FROM users WHERE id = ?', [id], callback);
+  getUserById: async (id, callback) => {
+    try {
+      const [results] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+      callback(null, results);
+    } catch (err) {
+      callback(err, null);
+    }
   },
-  createUser: (name, email, password, callback) => {
-    db.execute('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, password], callback);
+  createUser: async (name, email, password, callback) => {
+    try {
+      const [result] = await db.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, password]);
+      callback(null, result);
+    } catch (err) {
+      callback(err, null);
+    }
   }
 };
 

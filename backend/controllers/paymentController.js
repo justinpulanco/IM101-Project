@@ -1,34 +1,31 @@
 const db = require('../config/db');
 
-exports.createPayment = (req, res) => {
+exports.createPayment = async (req, res) => {
     const { booking_id, amount, payment_method } = req.body;
     
     if (!booking_id || !amount || !payment_method) {
         return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    db.execute('SELECT * FROM bookings WHERE id = ?', [booking_id], (err, results) => {
-        if (err) return res.status(500).json({ message: 'Error verifying booking', error: err });
+    try {
+        const [results] = await db.query('SELECT * FROM bookings WHERE id = ?', [booking_id]);
         if (results.length === 0) return res.status(404).json({ message: 'Booking not found' });
+        
         const sql = 'INSERT INTO payments (booking_id, amount, payment_method, status) VALUES (?, ?, ?, ?)';
-        db.execute(sql, [booking_id, amount, payment_method, 'completed'], (err, result) => {
-            if (err) return res.status(500).json({ message: 'Error processing payment', error: err });
-            
-            db.execute('UPDATE bookings SET payment_status = ? WHERE id = ?', 
-                ['paid', booking_id], 
-                (err) => {
-                    if (err) return res.status(500).json({ message: 'Error updating booking status', error: err });
-                    res.status(201).json({ 
-                        message: 'Payment processed successfully',
-                        paymentId: result.insertId
-                    });
-                }
-            );
+        const [result] = await db.query(sql, [booking_id, amount, payment_method, 'completed']);
+        
+        await db.query('UPDATE bookings SET payment_status = ? WHERE id = ?', ['paid', booking_id]);
+        
+        res.status(201).json({ 
+            message: 'Payment processed successfully',
+            paymentId: result.insertId
         });
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Error processing payment', error: err.message });
+    }
 };
 
-exports.getPaymentsByBooking = (req, res) => {
+exports.getPaymentsByBooking = async (req, res) => {
     const { booking_id } = req.params;
     
     const sql = `
@@ -39,13 +36,15 @@ exports.getPaymentsByBooking = (req, res) => {
         WHERE p.booking_id = ?
     `;
     
-    db.execute(sql, [booking_id], (err, results) => {
-        if (err) return res.status(500).json({ message: 'Error fetching payments', error: err });
+    try {
+        const [results] = await db.query(sql, [booking_id]);
         res.json(results);
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching payments', error: err.message });
+    }
 };
 
-exports.getPaymentById = (req, res) => {
+exports.getPaymentById = async (req, res) => {
     const { id } = req.params;
     
     const sql = `
@@ -56,9 +55,11 @@ exports.getPaymentById = (req, res) => {
         WHERE p.id = ?
     `;
     
-    db.execute(sql, [id], (err, results) => {
-        if (err) return res.status(500).json({ message: 'Error fetching payment', error: err });
+    try {
+        const [results] = await db.query(sql, [id]);
         if (results.length === 0) return res.status(404).json({ message: 'Payment not found' });
         res.json(results[0]);
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching payment', error: err.message });
+    }
 };

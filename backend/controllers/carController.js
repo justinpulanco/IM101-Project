@@ -1,39 +1,54 @@
 const db = require('../config/db');
-if (typeof db.query !== 'function') {
-    console.error('carController: db.query is NOT a function, db value:', db);
-}
 
-exports.getAllCars = (req, res) => {
-    const sql = 'SELECT * FROM cars WHERE is_available = true';
-    db.execute(sql, (err, results) => {
-        if (err) return res.status(500).json({ message: 'Error fetching cars', error: err });
+exports.getAllCars = async (req, res) => {
+    try {
+        const sql = 'SELECT * FROM cars WHERE is_available = true';
+        const [results] = await db.query(sql);
         res.json(results);
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching cars', error: err.message });
+    }
 };
 
-exports.getCarById = (req, res) => {
+exports.getCarById = async (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
 
-    db.execute('SELECT * FROM cars WHERE id = ?', [id], (err, results) => {
-        if (err) return res.status(500).json({ message: 'Error fetching car', error: err });
+    try {
+        const [results] = await db.query('SELECT * FROM cars WHERE id = ?', [id]);
         if (results.length === 0) return res.status(404).json({ message: 'Car not found' });
         res.json(results[0]);
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching car', error: err.message });
+    }
 };
 
-exports.addCar = (req, res) => {
-    const { model, brand, year, price_per_day, is_available } = req.body;
-    if (!model || !brand || !year || !price_per_day) return res.status(400).json({ message: 'Missing fields' });
+exports.addCar = async (req, res) => {
+    const { model, brand, make, year, price_per_day, is_available, type, transmission, image } = req.body;
+    const carBrand = brand || make; // Accept both brand and make
+    
+    if (!model || !carBrand || !year || !price_per_day) 
+        return res.status(400).json({ message: 'Missing fields' });
 
-    const sql = 'INSERT INTO cars (model, brand, year, price_per_day, is_available) VALUES (?, ?, ?, ?, ?)';
-    db.execute(sql, [model, brand, year, price_per_day, is_available ?? true], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Error adding car', error: err });
+    try {
+        const sql = 'INSERT INTO cars (model, brand, year, price_per_day, is_available, type, transmission, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        const [result] = await db.query(sql, [
+            model, 
+            carBrand, 
+            year, 
+            price_per_day, 
+            is_available ?? true,
+            type || 'Sedan',
+            transmission || 'Automatic',
+            image || null
+        ]);
         res.status(201).json({ message: 'Car added', carId: result.insertId });
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Error adding car', error: err.message });
+    }
 };
 
-exports.updateCar = (req, res) => {
+exports.updateCar = async (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
 
@@ -48,21 +63,25 @@ exports.updateCar = (req, res) => {
 
     if (updates.length === 0) return res.status(400).json({ message: 'No fields to update' });
 
-    values.push(id);
-    db.execute(`UPDATE cars SET ${updates.join(', ')} WHERE id = ?`, values, (err, result) => {
-        if (err) return res.status(500).json({ message: 'Error updating car', error: err });
+    try {
+        values.push(id);
+        const [result] = await db.query(`UPDATE cars SET ${updates.join(', ')} WHERE id = ?`, values);
         if (result.affectedRows === 0) return res.status(404).json({ message: 'Car not found' });
         res.json({ message: 'Car updated successfully' });
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Error updating car', error: err.message });
+    }
 };
 
-exports.deleteCar = (req, res) => {
+exports.deleteCar = async (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
 
-    db.execute('DELETE FROM cars WHERE id = ?', [id], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Error deleting car', error: err });
+    try {
+        const [result] = await db.query('DELETE FROM cars WHERE id = ?', [id]);
         if (result.affectedRows === 0) return res.status(404).json({ message: 'Car not found' });
         res.json({ message: 'Car deleted successfully' });
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Error deleting car', error: err.message });
+    }
 };

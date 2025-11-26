@@ -1,40 +1,34 @@
 const db = require('../config/db');
-if (typeof db.query !== 'function') {
-  console.error('bookingController: db.query is NOT a function, db value:', db);
-}
 
-exports.createBooking = (req, res) => {
+exports.createBooking = async (req, res) => {
   const { user_id, car_id, start_date, end_date, total_price } = req.body;
   if (!user_id || !car_id || !start_date || !end_date)
     return res.status(400).json({ message: 'All fields required' });
 
-  db.execute('SELECT * FROM cars WHERE id = ? AND is_available = true', [car_id], (err, results) => {
-    if (err) return res.status(500).json({ message: 'DB error', error: err });
-    if (results.length === 0) return res.status(400).json({ message: 'Car not available' });
+  try {
+    const [carResults] = await db.query('SELECT * FROM cars WHERE id = ? AND is_available = true', [car_id]);
+    if (carResults.length === 0) return res.status(400).json({ message: 'Car not available' });
 
     const overlapQuery = `
       SELECT * FROM bookings WHERE car_id = ? AND
       (start_date < ? AND end_date > ?)
     `;
-    db.execute(overlapQuery, [car_id, end_date, start_date], (err, overlapResults) => {
-      if (err) return res.status(500).json({ message: 'DB error', error: err });
-      if (overlapResults.length > 0) {
-        return res.status(400).json({ message: 'Car already booked for these dates' });
-      }
+    const [overlapResults] = await db.query(overlapQuery, [car_id, end_date, start_date]);
+    if (overlapResults.length > 0) {
+      return res.status(400).json({ message: 'Car already booked for these dates' });
+    }
 
-      db.execute(
-        'INSERT INTO bookings (user_id, car_id, start_date, end_date, total_price) VALUES (?, ?, ?, ?, ?)',
-        [user_id, car_id, start_date, end_date, total_price || 0],
-        (err, result) => {
-          if (err) return res.status(500).json({ message: 'DB error', error: err });
-          res.status(201).json({ message: 'Booking created', bookingId: result.insertId });
-        }
-      );
-    });
-  });
+    const [result] = await db.query(
+      'INSERT INTO bookings (user_id, car_id, start_date, end_date, total_price) VALUES (?, ?, ?, ?, ?)',
+      [user_id, car_id, start_date, end_date, total_price || 0]
+    );
+    res.status(201).json({ message: 'Booking created', bookingId: result.insertId });
+  } catch (err) {
+    res.status(500).json({ message: 'DB error', error: err.message });
+  }
 };
 
-exports.getBookings = (req, res) => {
+exports.getBookings = async (req, res) => {
   const sql = `
     SELECT b.id, u.name AS user, c.model AS car, b.start_date, b.end_date, b.total_price
     FROM bookings b
@@ -42,13 +36,15 @@ exports.getBookings = (req, res) => {
     LEFT JOIN cars c ON b.car_id = c.id
     ORDER BY b.created_at DESC
   `;
-  db.execute(sql, (err, results) => {
-    if (err) return res.status(500).json({ message: 'DB error', error: err });
+  try {
+    const [results] = await db.query(sql);
     res.json(results);
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'DB error', error: err.message });
+  }
 };
 
-exports.getUserBookings = (req, res) => {
+exports.getUserBookings = async (req, res) => {
   const { user_id } = req.params;
   const sql = `
     SELECT b.id, c.model AS car, c.brand, c.type, b.start_date, b.end_date, b.total_price
@@ -57,13 +53,15 @@ exports.getUserBookings = (req, res) => {
     WHERE b.user_id = ?
     ORDER BY b.created_at DESC
   `;
-  db.execute(sql, [user_id], (err, results) => {
-    if (err) return res.status(500).json({ message: 'DB error', error: err });
+  try {
+    const [results] = await db.query(sql, [user_id]);
     res.json(results);
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'DB error', error: err.message });
+  }
 };
 
-exports.updateBooking = (req, res) => {
+exports.updateBooking = async (req, res) => {
   const { id } = req.params;
   const { start_date, end_date } = req.body;
   
@@ -76,31 +74,32 @@ exports.updateBooking = (req, res) => {
     (start_date < ? AND end_date > ?)
   `;
   
-  db.execute(overlapQuery, [id, id, end_date, start_date], (err, overlapResults) => {
-    if (err) return res.status(500).json({ message: 'DB error', error: err });
+  try {
+    const [overlapResults] = await db.query(overlapQuery, [id, id, end_date, start_date]);
     if (overlapResults.length > 0) {
       return res.status(400).json({ message: 'Car already booked for these dates' });
     }
 
-    db.execute(
+    const [result] = await db.query(
       'UPDATE bookings SET start_date = ?, end_date = ? WHERE id = ?',
-      [start_date, end_date, id],
-      (err, result) => {
-        if (err) return res.status(500).json({ message: 'DB error', error: err });
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Booking not found' });
-        res.json({ message: 'Booking updated' });
-      }
+      [start_date, end_date, id]
     );
-  });
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Booking not found' });
+    res.json({ message: 'Booking updated' });
+  } catch (err) {
+    res.status(500).json({ message: 'DB error', error: err.message });
+  }
 };
 
-exports.deleteBooking = (req, res) => {
+exports.deleteBooking = async (req, res) => {
   const { id } = req.params;
   if (!id || isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
 
-  db.execute('DELETE FROM bookings WHERE id = ?', [id], (err, result) => {
-    if (err) return res.status(500).json({ message: 'DB error', error: err });
+  try {
+    const [result] = await db.query('DELETE FROM bookings WHERE id = ?', [id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Booking not found' });
     res.json({ message: 'Booking deleted' });
-  });
+  } catch (err) {
+    res.status(500).json({ message: 'DB error', error: err.message });
+  }
 };
