@@ -5,6 +5,19 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Car2Go-U-Drive — Frontend</title>
+		<!-- Protect against injected scripts that assume `window.ethereum` exists -->
+		<script>
+		  try {
+		    if (typeof window !== 'undefined') {
+		      window.ethereum = window.ethereum || {};
+		      if (typeof window.ethereum.selectedAddress === 'undefined') {
+		        window.ethereum.selectedAddress = null;
+		      }
+		    }
+		  } catch (e) {
+		    // ignore
+		  }
+		</script>
 	</head>
 	<body>
 		<div id="root"></div>
