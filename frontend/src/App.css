@@ -30,11 +30,12 @@ body {
   border-radius: 18px;
   padding: 18px;
   position: fixed;
-  top: 0;
+  /* respect phone safe area (notch) */
+  top: env(safe-area-inset-top, 10px);
   left: 50%;
   transform: translateX(-50%);
   width: 95%;
-  z-index: 150;
+  z-index: 1200;
   background-color: rgb(140, 43, 43);
   box-shadow: 0 2px 8px rgb(133, 40, 40);
 }
@@ -590,12 +591,12 @@ body {
   background: var(--accent);
   color: #fff;
   border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
   font-weight: 700;
   cursor: pointer;
   margin-left: 8px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.14);
 }
 
 .navbar-signin:hover {
@@ -1048,10 +1049,25 @@ body {
   }
 
   /* Move Sign In into navbar on phones too - style navbar button for small screens */
+  /* make navbar sign in as prominent as on desktop */
   .navbar-signin {
-    padding: 8px 10px;
-    font-size: 14px;
-    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 10px;
+    margin-left: 6px;
+  }
+
+  /* give navbar a bit more height and spacing for phones */
+  .navbar {
+    padding: calc(10px + env(safe-area-inset-top, 10px));
+    width: 98%;
+    left: 1%;
+    border-radius: 12px;
+  }
+
+  .navbar-top {
+    align-items: center;
+    gap: 10px;
   }
 
   /* ensure navbar icons remain visible and high-contrast */
