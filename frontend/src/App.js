@@ -191,6 +191,11 @@ function App() {
             {!isAuthenticated && (
               <button className="navbar-signin" onClick={() => setShowForms(true)}>Sign In</button>
             )}
+
+            {/* show Logout when authenticated */}
+            {isAuthenticated && (
+              <button className="navbar-logout" onClick={handleLogout}>Logout</button>
+            )}
           </div>
         </div>
       </nav>

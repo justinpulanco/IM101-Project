@@ -603,6 +603,25 @@ body {
   filter: brightness(0.96);
 }
 
+/* Navbar Logout button */
+.navbar-logout {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.14);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.12s ease, transform 0.08s ease, border-color 0.12s ease;
+}
+
+.navbar-logout:hover {
+  background: rgba(255,255,255,0.06);
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.28);
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   /* Navbar adjustments */
@@ -1055,6 +1074,13 @@ body {
     font-size: 15px;
     border-radius: 10px;
     margin-left: 6px;
+  }
+
+  /* make logout match signin on phones */
+  .navbar-logout {
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 10px;
   }
 
   /* give navbar a bit more height and spacing for phones */
