@@ -13,7 +13,7 @@ const hashPassword = async () => {
     const hashed = await bcrypt.hash(adminPassword, 10);
     
     // Check if admin already exists
-    db.query('SELECT * FROM users WHERE email = ?', [adminEmail], (err, results) => {
+    db.execute('SELECT * FROM users WHERE email = ?', [adminEmail], (err, results) => {
       if (err) {
         console.error('Error checking email:', err);
         process.exit(1);
@@ -25,7 +25,7 @@ const hashPassword = async () => {
       }
       
       // Insert new admin user
-      db.query(
+      db.execute(
         'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
         [adminName, adminEmail, hashed],
         (err, result) => {

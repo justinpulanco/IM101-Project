@@ -1,11 +1,14 @@
 const db = require('../config/db');
+if (typeof db.query !== 'function') {
+  console.error('bookingController: db.query is NOT a function, db value:', db);
+}
 
 exports.createBooking = (req, res) => {
   const { user_id, car_id, start_date, end_date, total_price } = req.body;
   if (!user_id || !car_id || !start_date || !end_date)
     return res.status(400).json({ message: 'All fields required' });
 
-  db.query('SELECT * FROM cars WHERE id = ? AND is_available = true', [car_id], (err, results) => {
+  db.execute('SELECT * FROM cars WHERE id = ? AND is_available = true', [car_id], (err, results) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     if (results.length === 0) return res.status(400).json({ message: 'Car not available' });
 
@@ -13,13 +16,13 @@ exports.createBooking = (req, res) => {
       SELECT * FROM bookings WHERE car_id = ? AND
       (start_date < ? AND end_date > ?)
     `;
-    db.query(overlapQuery, [car_id, end_date, start_date], (err, overlapResults) => {
+    db.execute(overlapQuery, [car_id, end_date, start_date], (err, overlapResults) => {
       if (err) return res.status(500).json({ message: 'DB error', error: err });
       if (overlapResults.length > 0) {
         return res.status(400).json({ message: 'Car already booked for these dates' });
       }
 
-      db.query(
+      db.execute(
         'INSERT INTO bookings (user_id, car_id, start_date, end_date, total_price) VALUES (?, ?, ?, ?, ?)',
         [user_id, car_id, start_date, end_date, total_price || 0],
         (err, result) => {
@@ -39,7 +42,7 @@ exports.getBookings = (req, res) => {
     LEFT JOIN cars c ON b.car_id = c.id
     ORDER BY b.created_at DESC
   `;
-  db.query(sql, (err, results) => {
+  db.execute(sql, (err, results) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     res.json(results);
   });
@@ -54,7 +57,7 @@ exports.getUserBookings = (req, res) => {
     WHERE b.user_id = ?
     ORDER BY b.created_at DESC
   `;
-  db.query(sql, [user_id], (err, results) => {
+  db.execute(sql, [user_id], (err, results) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     res.json(results);
   });
@@ -73,13 +76,13 @@ exports.updateBooking = (req, res) => {
     (start_date < ? AND end_date > ?)
   `;
   
-  db.query(overlapQuery, [id, id, end_date, start_date], (err, overlapResults) => {
+  db.execute(overlapQuery, [id, id, end_date, start_date], (err, overlapResults) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     if (overlapResults.length > 0) {
       return res.status(400).json({ message: 'Car already booked for these dates' });
     }
 
-    db.query(
+    db.execute(
       'UPDATE bookings SET start_date = ?, end_date = ? WHERE id = ?',
       [start_date, end_date, id],
       (err, result) => {
@@ -95,7 +98,7 @@ exports.deleteBooking = (req, res) => {
   const { id } = req.params;
   if (!id || isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
 
-  db.query('DELETE FROM bookings WHERE id = ?', [id], (err, result) => {
+  db.execute('DELETE FROM bookings WHERE id = ?', [id], (err, result) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Booking not found' });
     res.json({ message: 'Booking deleted' });
