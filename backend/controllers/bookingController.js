@@ -5,12 +5,10 @@ exports.createBooking = (req, res) => {
   if (!user_id || !car_id || !start_date || !end_date)
     return res.status(400).json({ message: 'All fields required' });
 
-  // Check if car is available
   db.query('SELECT * FROM cars WHERE id = ? AND is_available = true', [car_id], (err, results) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     if (results.length === 0) return res.status(400).json({ message: 'Car not available' });
 
-    // Check if the car is already booked for the selected dates
     const overlapQuery = `
       SELECT * FROM bookings WHERE car_id = ? AND
       (start_date < ? AND end_date > ?)
@@ -21,7 +19,6 @@ exports.createBooking = (req, res) => {
         return res.status(400).json({ message: 'Car already booked for these dates' });
       }
 
-      // Create booking if no overlap
       db.query(
         'INSERT INTO bookings (user_id, car_id, start_date, end_date, total_price) VALUES (?, ?, ?, ?, ?)',
         [user_id, car_id, start_date, end_date, total_price || 0],
@@ -45,6 +42,52 @@ exports.getBookings = (req, res) => {
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ message: 'DB error', error: err });
     res.json(results);
+  });
+};
+
+exports.getUserBookings = (req, res) => {
+  const { user_id } = req.params;
+  const sql = `
+    SELECT b.id, c.model AS car, c.brand, c.type, b.start_date, b.end_date, b.total_price
+    FROM bookings b
+    LEFT JOIN cars c ON b.car_id = c.id
+    WHERE b.user_id = ?
+    ORDER BY b.created_at DESC
+  `;
+  db.query(sql, [user_id], (err, results) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
+    res.json(results);
+  });
+};
+
+exports.updateBooking = (req, res) => {
+  const { id } = req.params;
+  const { start_date, end_date } = req.body;
+  
+  if (!id || isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
+  if (!start_date || !end_date) return res.status(400).json({ message: 'Start and end dates required' });
+
+  const overlapQuery = `
+    SELECT * FROM bookings 
+    WHERE id != ? AND car_id = (SELECT car_id FROM bookings WHERE id = ?) AND
+    (start_date < ? AND end_date > ?)
+  `;
+  
+  db.query(overlapQuery, [id, id, end_date, start_date], (err, overlapResults) => {
+    if (err) return res.status(500).json({ message: 'DB error', error: err });
+    if (overlapResults.length > 0) {
+      return res.status(400).json({ message: 'Car already booked for these dates' });
+    }
+
+    db.query(
+      'UPDATE bookings SET start_date = ?, end_date = ? WHERE id = ?',
+      [start_date, end_date, id],
+      (err, result) => {
+        if (err) return res.status(500).json({ message: 'DB error', error: err });
+        if (result.affectedRows === 0) return res.status(404).json({ message: 'Booking not found' });
+        res.json({ message: 'Booking updated' });
+      }
+    );
   });
 };
 

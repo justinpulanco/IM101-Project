@@ -1,6 +1,7 @@
+require('dotenv').config();  
+
 const mysql = require('mysql2');
 
-// Check for required environment variables
 const requiredEnvVars = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
 for (const envVar of requiredEnvVars) {
     if (!process.env[envVar]) {
@@ -9,7 +10,6 @@ for (const envVar of requiredEnvVars) {
     }
 }
 
-// Create connection to MySQL
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -26,14 +26,12 @@ db.connect((err) => {
     console.log('Connected to the database.');
 });
 
-// Add ping functionality to prevent connection timeouts
 setInterval(() => {
     db.ping((err) => {
         if (err) console.error('Database ping failed:', err);
     });
 }, 60000);
 
-// Check if the car is already booked for the selected dates
 const checkBookingOverlap = (carId, startDate, endDate, callback) => {
     const query = `
         SELECT * FROM bookings WHERE car_id = ? AND
@@ -41,14 +39,13 @@ const checkBookingOverlap = (carId, startDate, endDate, callback) => {
     `;
     db.execute(query, [carId, endDate, startDate], (err, results) => {
         if (err) {
-            return callback('DB error: ' + err); // Return DB error message
+            return callback('DB error: ' + err); 
         }
         if (results.length > 0) {
-            return callback(null, 'Car already booked'); // Custom message for overlap
+            return callback(null, 'Car already booked'); 
         }
-        return callback(null, 'Booking available'); // No overlap
+        return callback(null, 'Booking available'); 
     });
 };
 
-// Export functions
 module.exports = { db, checkBookingOverlap };

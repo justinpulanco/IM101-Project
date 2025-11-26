@@ -1,6 +1,5 @@
 const db = require('../config/db');
 
-// Get all available cars
 exports.getAllCars = (req, res) => {
     const sql = 'SELECT * FROM cars WHERE is_available = true';
     db.query(sql, (err, results) => {
@@ -9,7 +8,6 @@ exports.getAllCars = (req, res) => {
     });
 };
 
-// Get car by ID
 exports.getCarById = (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
@@ -21,7 +19,6 @@ exports.getCarById = (req, res) => {
     });
 };
 
-// Add car
 exports.addCar = (req, res) => {
     const { model, brand, year, price_per_day, is_available } = req.body;
     if (!model || !brand || !year || !price_per_day) return res.status(400).json({ message: 'Missing fields' });
@@ -33,7 +30,6 @@ exports.addCar = (req, res) => {
     });
 };
 
-// Update car
 exports.updateCar = (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
@@ -57,7 +53,6 @@ exports.updateCar = (req, res) => {
     });
 };
 
-// Delete car
 exports.deleteCar = (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });

@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db'); // Import MySQL connection
+const db = require('../config/db'); 
 
-// ✅ Route: Get all cars
 router.get('/', (req, res) => {
   console.log('📡 GET /api/cars hit!');
 
-  // Check if DB connection exists
+
   if (!db) {
     console.error('❌ Database connection not found!');
     return res.status(500).json({ message: 'Database not connected' });
@@ -25,7 +24,6 @@ router.get('/', (req, res) => {
   });
 });
 
-// ✅ Health check route (for debugging)
 router.get('/test', (req, res) => {
   res.json({ message: 'Car routes working fine!' });
 });
