@@ -48,4 +48,10 @@ const checkBookingOverlap = (carId, startDate, endDate, callback) => {
     });
 };
 
-module.exports = { db, checkBookingOverlap };
+// Export the connection in a way that supports both import styles used across the codebase:
+// - `const db = require('../config/db')` (default import)
+// - `const { db } = require('../config/db')` (named import)
+// Also attach the helper `checkBookingOverlap` as a property.
+module.exports = db;
+module.exports.db = db;
+module.exports.checkBookingOverlap = checkBookingOverlap;
