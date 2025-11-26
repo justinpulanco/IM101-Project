@@ -187,6 +187,10 @@ function App() {
             <button className="navbar-icon search-icon">🔍</button>
             <button className="navbar-icon user-icon" onClick={() => setShowForms(true)}>👤</button>
             <button className="navbar-icon admin-icon" onClick={() => setIsAdminMode(!isAdminMode)} title="Admin Login">⚙️</button>
+            {/* new navbar Sign In button (replaces floating trigger) */}
+            {!isAuthenticated && (
+              <button className="navbar-signin" onClick={() => setShowForms(true)}>Sign In</button>
+            )}
           </div>
         </div>
       </nav>
@@ -252,7 +256,6 @@ function App() {
                 ))}
               </div>
               </div>
-            </div>
           )}
 
           <div className={`modal-overlay ${showForms ? 'visible' : 'hidden'}`}>
@@ -342,9 +345,7 @@ function App() {
             </div>
           </div>
 
-          <button className="modal-trigger" onClick={() => setShowForms(true)}>
-            Sign In
-          </button>
+          {/* floating trigger removed - Sign In now in navbar */}
         </div>
       ) : (
   <Dashboard apiBase={API} token={token} user={user} onLogout={() => { setToken(''); setUser(null); setIsAuthenticated(false); }} />
