@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Dashboard from './Dashboard';
 import AdminDashboard from './AdminDashboard';
@@ -23,6 +23,8 @@ function App() {
   const [tabAnim, setTabAnim] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showPublicDashboard, setShowPublicDashboard] = useState(false);
+  const [showAllCars, setShowAllCars] = useState(false);
+  const [allCarsDisplay, setAllCarsDisplay] = useState([]);
   // Booking modal state
   const [showBooking, setShowBooking] = useState(false);
   const [bookingCarId, setBookingCarId] = useState('');
@@ -30,6 +32,13 @@ function App() {
   const [bookingStart, setBookingStart] = useState('');
   const [bookingEnd, setBookingEnd] = useState('');
   const [bookingTotal, setBookingTotal] = useState('');
+  const [showBookingsPopover, setShowBookingsPopover] = useState(false);
+  const [userBookings, setUserBookings] = useState([]);
+  const [showCarDropdown, setShowCarDropdown] = useState(false);
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [isAvailable, setIsAvailable] = useState(false);
+  const [showNavbarSearch, setShowNavbarSearch] = useState(false);
+  const navbarSearchRef = useRef(null);
 
   // currency formatter for PHP
   const currency = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 });
@@ -53,11 +62,103 @@ function App() {
   const loadCarsForBooking = async () => {
     try {
       const res = await fetch(`${API}/cars`);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
       const data = await res.json();
       setCarsList(Array.isArray(data) ? data : []);
+      return data;
     } catch (err) {
-      console.error('loadCarsForBooking', err);
+      console.error('Error loading cars for booking:', err);
       setCarsList([]);
+      alert('Failed to load cars. Please try again.');
+      return [];
+    }
+  };
+
+  // fetch all cars for display
+  const loadAllCars = async () => {
+    try {
+      const res = await fetch(`${API}/cars`);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      setAllCarsDisplay(Array.isArray(data) ? data : []);
+      setShowAllCars(true);
+    } catch (err) {
+      console.error('Error loading cars:', err);
+      setAllCarsDisplay([]);
+      alert('Failed to load cars. Please try again.');
+    }
+  };
+
+  // Check car availability
+  const checkAvailability = async (carId, startDate, endDate) => {
+    if (!carId || !startDate || !endDate) {
+      setIsAvailable(false);
+      return false;
+    }
+    try {
+      const res = await fetch(`${API}/bookings/check-availability`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          car_id: carId,
+          start_date: startDate,
+          end_date: endDate
+        })
+      });
+      const data = await res.json();
+      setIsAvailable(data.available || false);
+      return data.available || false;
+    } catch (err) {
+      console.error('checkAvailability', err);
+      setIsAvailable(false);
+      return false;
+    }
+  };
+
+  // Handle booking a car
+  const handleBookCar = async (carId) => {
+    if (!carId || !bookingStart || !bookingEnd) {
+      alert('Please select a car and dates');
+      return;
+    }
+
+    const isCarAvailable = await checkAvailability(carId, bookingStart, bookingEnd);
+    if (!isCarAvailable) {
+      alert('Sorry, this car is not available for the selected dates');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/bookings`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          car_id: carId,
+          start_date: bookingStart,
+          end_date: bookingEnd,
+          user_id: user?.id || user?._id
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Booking successful!');
+        setShowCarDropdown(false);
+        setSelectedCar(null);
+        setBookingStart('');
+        setBookingEnd('');
+      } else {
+        alert(data.message || 'Booking failed');
+      }
+    } catch (err) {
+      console.error('bookCar', err);
+      alert('Booking failed');
     }
   };
 
@@ -84,6 +185,24 @@ function App() {
       console.warn('restore auth', err);
     }
   }, []);
+
+  // Close navbar search popover when clicking outside, and focus input when opened
+  useEffect(() => {
+    function handleDocClick(e) {
+      if (showNavbarSearch && navbarSearchRef.current && !navbarSearchRef.current.contains(e.target)) {
+        setShowNavbarSearch(false);
+      }
+    }
+    document.addEventListener('mousedown', handleDocClick);
+    return () => document.removeEventListener('mousedown', handleDocClick);
+  }, [showNavbarSearch]);
+
+  useEffect(() => {
+    if (showNavbarSearch && navbarSearchRef.current) {
+      const input = navbarSearchRef.current.querySelector('input[type=text]');
+      if (input) input.focus();
+    }
+  }, [showNavbarSearch]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -208,8 +327,6 @@ function App() {
     localStorage.removeItem('adminToken');
   };
 
-  
-
   return (
     <div className="App">
       {/* Navbar */}
@@ -228,37 +345,157 @@ function App() {
               >
                 Home
               </a>
-              <a href="#cars">Cars</a>
               <a href="#reviews">Reviews</a>
               <a href="#about">About</a>
             </div>
           )}
 
+          {/* Cars link removed (functionality still available via other UI) */}
+
           <div className="navbar-right">
-            <button className="navbar-icon search-icon">🔍</button>
+            <button
+              className="navbar-icon search-icon"
+              onClick={() => setShowNavbarSearch(s => !s)}
+              aria-label="Open search"
+              aria-expanded={showNavbarSearch}
+              title="Search"
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            </button>
+            {isAuthenticated && !isAdminMode && (
+              <>
+              </>
+            )}
             {isAuthenticated && !isAdminMode && (
               <button
-                className="navbar-signin"
+                title="Your bookings"
+                aria-label="Your bookings"
                 onClick={async () => {
-                  await loadCarsForBooking();
-                  setShowBooking(true);
+                  // toggle popover and load bookings when opening
+                  const next = !showBookingsPopover;
+                  setShowBookingsPopover(next);
+                  if (next) {
+                    try {
+                      const uid = user?.id || user?.user_id || user?._id;
+                      if (!uid) { setUserBookings([]); return; }
+                      const res = await fetch(`${API}/bookings/user/${uid}`);
+                      const data = await res.json();
+                      setUserBookings(Array.isArray(data) ? data : []);
+                    } catch (err) {
+                      console.error('load user bookings', err);
+                      setUserBookings([]);
+                    }
+                  }
                 }}
+                className="navbar-bookings-btn navbar-icon"
               >
-                Book a Car
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M16 3v4M8 3v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
               </button>
             )}
 
             <div className={`navbar-icons ${isAuthenticated ? 'is-hidden' : ''}`}>
-              <button className="navbar-icon user-icon" onClick={() => setShowForms(true)}>👤</button>
-              <button className="navbar-icon admin-icon" onClick={() => setIsAdminMode(!isAdminMode)} title="Admin Login">⚙️</button>
+              <button className="navbar-icon user-icon" onClick={() => setShowForms(true)} aria-label="Account"> 
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M4 20c1.5-4 6-6 8-6s6.5 2 8 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <button className="navbar-icon admin-icon" onClick={() => setIsAdminMode(!isAdminMode)} title="Admin Login" aria-label="Admin"> 
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.28 16.9l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82L4.21 2.28A2 2 0 0 1 7.04.45l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V0a2 2 0 0 1 4 0v.09c.1.7.6 1.27 1.3 1.51h.06a1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 0 1 21.72 7.1l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.21.36.33.78.33 1.2s-.12.84-.33 1.2v.06z" stroke="currentColor" strokeWidth="0.6" />
+                </svg>
+              </button>
             </div>
 
+            {showNavbarSearch && (
+              <div ref={navbarSearchRef} className="navbar-search-popover" onClick={(e) => e.stopPropagation()}>
+                <form
+                  className="navbar-search-form"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setShowNavbarSearch(false);
+                    handleSearch(e);
+                  }}
+                >
+                  <input type="text" placeholder="Location or model" />
+                  <div className="navbar-search-dates">
+                    <input type="date" placeholder="Start" />
+                    <input type="date" placeholder="Return" />
+                  </div>
+                  <div className="navbar-search-actions">
+                    <button type="submit" className="btn primary">Search</button>
+                    <button type="button" className="btn" onClick={() => { setShowNavbarSearch(false); loadAllCars(); }}>View All Cars</button>
+                  </div>
+                </form>
+              </div>
+            )}
+
             {isAuthenticated && (
-              <button className="navbar-logout icon-pill" onClick={handleLogout} aria-label="Logout" title="Logout">🚪</button>
+              <button className="navbar-logout icon-pill" onClick={handleLogout} aria-label="Logout" title="Logout">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M16 17l5-5-5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M21 12H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M13 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
             )}
           </div>
         </div>
       </nav>
+
+        {/* Bookings popover anchored to navbar (simple absolute popover) */}
+        {showBookingsPopover && (
+        <div className="bookings-popover">
+          <div className="bookings-popover-head">
+            <strong>Your Bookings</strong>
+            <button className="bookings-popover-close" onClick={() => setShowBookingsPopover(false)}>✕</button>
+          </div>
+          {userBookings.length === 0 ? (
+            <div className="bookings-empty">No bookings found.</div>
+          ) : (
+            userBookings.map((b) => (
+              <div key={b.id} className="bookings-item">
+                <div className="bookings-id">ID: {b.id}</div>
+                <div className="bookings-user">{b.user || (user && (user.name || user.email))}</div>
+                <div className="bookings-car">{b.car || b.model || 'Car'}</div>
+                <div className="bookings-dates">{new Date(b.start_date).toISOString()} → {new Date(b.end_date).toISOString()}</div>
+                <div className="bookings-price">{currency.format(b.total_price || b.total || 0)}</div>
+                <div style={{marginTop:8, display:'flex', gap:8}}>
+                  {(b.payment_status || b.status) === 'paid' ? (
+                    <div style={{fontSize:12, color:'#777'}}>Transacted</div>
+                  ) : (
+                    <button className="bookings-delete-btn" onClick={async () => {
+                      const msg = window.confirm('Delete this booking?');
+                      if (!msg) return;
+                      try {
+                        const res = await fetch(`${API}/bookings/${b.id}`, { method: 'DELETE', headers: { 'Content-Type':'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+                        const data = await res.json();
+                        if (res.ok) {
+                          // remove locally
+                          setUserBookings((prev) => prev.filter((x) => x.id !== b.id));
+                          alert(data.message || 'Booking deleted');
+                        } else {
+                          alert(data.message || 'Delete failed');
+                        }
+                      } catch (err) {
+                        console.error('delete booking', err);
+                        alert('Delete failed');
+                      }
+                    }}>Delete</button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* Main content branches */}
       {isAdminMode && !adminToken ? (
@@ -333,7 +570,20 @@ function App() {
                       <input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
                       <button type="submit">Login</button>
                     </form>
-                    <div className="forgot-password"><button type="button" className="link">Forgotten password?</button></div>
+                    <div className="no-account">
+                      <span className="no-account-text">No account?</span>
+                      <button
+                        type="button"
+                        className="create-account-btn"
+                        onClick={() => {
+                          setActiveTab('register');
+                          setTabAnim(true);
+                          setTimeout(() => setTabAnim(false), 360);
+                        }}
+                      >
+                        Click Here
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -375,18 +625,14 @@ function App() {
                   const available = car ? (car.available ?? car.is_available ?? true) : true;
                   if (!available) { alert('Selected car is not available for booking'); return; }
                   try {
-                    const body = { car_id: carId, start_date: bookingStart, end_date: bookingEnd, total_price: bookingTotal || null };
+                    const userId = user?.id || user?.user_id || user?._id || null;
+                    const body = { user_id: userId, car_id: carId, start_date: bookingStart, end_date: bookingEnd, total_price: Number(bookingTotal) || 0 };
+                    console.log('Booking payload:', body);
                     const res = await fetch(`${API}/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify(body) });
                     const data = await res.json();
                     if (res.ok) { alert(data.message || 'Booking successful'); setShowBooking(false); setBookingCarId(''); setBookingStart(''); setBookingEnd(''); setBookingTotal(''); } else { alert(data.message || 'Booking failed'); }
                   } catch (err) { console.error('booking', err); alert('Booking failed'); }
                 }}>
-                  <label style={{fontSize:13, color:'#333', marginBottom:6}}>Select Car</label>
-                  <select value={bookingCarId} onChange={(e) => setBookingCarId(e.target.value)} required>
-                    <option value="">-- pick a car --</option>
-                    {carsList.map((c) => (<option key={c.id || c._id} value={c.id || c._id}>{c.make ? `${c.make} ${c.model || ''}` : c.model || c.name || `Car ${c.id || c._id}`}</option>))}
-                  </select>
-
                   <div style={{display:'flex',gap:8,marginTop:10}}>
                     <div style={{flex:1}}>
                       <label style={{fontSize:13, color:'#333'}}>Start</label>
@@ -411,6 +657,46 @@ function App() {
                     <button type="button" onClick={() => { setBookingCarId(''); setBookingStart(''); setBookingEnd(''); setBookingTotal(''); }}>Clear</button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* All Cars Modal */}
+          {showAllCars && (
+            <div className="modal-overlay visible" onClick={() => setShowAllCars(false)}>
+              <div className="modal-content cars-modal" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close" onClick={() => setShowAllCars(false)}>✕</button>
+                <h2>All Available Cars</h2>
+                <div className="cars-grid">
+                  {allCarsDisplay.length > 0 ? (
+                    allCarsDisplay.map((car) => (
+                      <div key={car.id || car._id} className="car-card">
+                        <div className="car-image">
+                          <img 
+                            src={`/${car.model || 'car'}.png`} 
+                            alt={`${car.make} ${car.model}`}
+                            onError={(e) => { e.target.src = '/gtr.png'; }}
+                          />
+                        </div>
+                        <div className="car-details">
+                          <h3>{car.make} {car.model}</h3>
+                          <p className="car-type">{car.type}</p>
+                          <p className="car-year">{car.year}</p>
+                          <p className="car-transmission">{car.transmission}</p>
+                          <p className="car-price">₱{car.price_per_day || car.price}/day</p>
+                          <p className="car-availability">
+                            {car.availability || car.is_available ? 
+                              <span style={{color: '#27ae60'}}>✓ Available</span> : 
+                              <span style={{color: '#e74c3c'}}>✗ Not Available</span>
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p style={{gridColumn: '1 / -1', textAlign: 'center', padding: '20px'}}>No cars available</p>
+                  )}
+                </div>
               </div>
             </div>
           )}

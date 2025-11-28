@@ -19,6 +19,12 @@ function App() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showQuotation, setShowQuotation] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
+  const [gcashNumber, setGcashNumber] = useState('');
 
   const API = 'http://localhost:5000/api';
 
@@ -69,12 +75,45 @@ function App() {
 
   const loadCars = async () => {
     try {
+      console.log('Loading cars from API...');
       const res = await fetch(`${API}/cars`);
-      const cars = await res.json();
-      console.log('Cars loaded:', cars);
-      setCars(cars);
-    } catch (err) {
-      console.error('loadCars', err);
+      console.log('Response status:', res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('API error response:', errorText);
+        throw new Error(`Failed to load cars: ${res.status} ${res.statusText}`);
+      }
+      
+      const carsData = await res.json();
+      console.log('Cars data received:', carsData);
+      
+      if (!Array.isArray(carsData)) {
+        console.error('Received data is not an array:', carsData);
+        setCars([]);
+        return;
+      }
+      
+      // Deduplicate cars by model+type (case-insensitive) keeping first occurrence
+      const seen = new Set();
+      const uniqueCars = carsData.filter(car => {
+        if (!car || !car.model || !car.type) {
+          console.warn('Invalid car data:', car);
+          return false;
+        }
+        const key = `${String(car.model).trim().toLowerCase()}::${String(car.type).trim().toLowerCase()}`;
+        if (seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return true;
+      });
+      
+      console.log(`Loaded ${uniqueCars.length} unique cars`);
+      setCars(uniqueCars);
+    } catch (error) {
+      console.error('Error loading cars:', error);
+      setCars([]);
     }
   };
 
@@ -91,47 +130,87 @@ function App() {
     }
   };
 
-  const handleBooking = async (car) => {
-    if (!startDate || !endDate) {
-      alert('Please select start and end dates');
+  const handleBookNow = (car) => {
+    setSelectedCar(car);
+    setShowBookingModal(true);
+    setStartDate('');
+    setEndDate('');
+    setPaymentMethod('');
+  };
+
+  const scrollToCars = () => {
+    console.log('Book a Car clicked. Current cars:', cars);
+    loadCars().then(() => {
+      setShowBookingModal(true);
+      setSelectedCar(null);
+      setStartDate('');
+      setEndDate('');
+      setPaymentMethod('');
+    });
+  };
+
+  const calculateTotalDays = () => {
+    if (!startDate || !endDate) return 0;
+    const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+  };
+
+  const calculateTotalPrice = () => {
+    if (!selectedCar || !startDate || !endDate) return 0;
+    return calculateTotalDays() * selectedCar.price_per_day;
+  };
+
+  const handleBookingSubmit = async () => {
+    if (!token) {
+      alert('Please sign in to complete your booking');
+      setShowAuth(true);
       return;
     }
-    
+
     try {
-      const days = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
-      const totalPrice = days * car.price_per_day;
+      const days = calculateTotalDays();
+      const totalPrice = calculateTotalPrice();
       
-      const res = await fetch(`${API}/bookings`, {
+      const response = await fetch('http://localhost:5000/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          user_id: 1,
-          car_id: car.id,
+          car_id: selectedCar.id,
           start_date: startDate,
           end_date: endDate,
           total_price: totalPrice,
-        }),
+          payment_method: paymentMethod || 'cash',
+          ...(paymentMethod === 'gcash' && { gcash_number: gcashNumber }),
+          ...((paymentMethod === 'credit' || paymentMethod === 'debit') && {
+            card_last_four: cardNumber.slice(-4),
+            card_expiry: cardExpiry
+          })
+        })
       });
-      const data = await res.json();
-      alert(data.message || JSON.stringify(data));
-      if (res.ok) {
-        await loadBookings();
-        setSelectedCar(null);
-        setStartDate('');
-        setEndDate('');
+
+      if (!response.ok) {
+        throw new Error('Failed to create booking');
       }
-    } catch (err) {
-      console.error(err);
-      alert('Booking failed');
+
+      const result = await response.json();
+      alert('Booking successful!');
+      setShowBookingModal(false);
+      loadBookings(); // Refresh the bookings list
+    } catch (error) {
+      console.error('Booking error:', error);
+      alert('Failed to create booking. Please try again.');
     }
   };
 
   useEffect(() => {
-    loadCars();
-  }, []);
+    if (token) {
+      loadCars();
+      loadBookings();
+    }
+  }, [token]);
 
   if (showAuth) {
     return (
@@ -216,8 +295,10 @@ function App() {
         </div>
         <div className="nav-menu">
           <a href="#" className="nav-link">Home</a>
-          <a href="#" className="nav-link">Cars</a>
           <a href="#" className="nav-link" onClick={() => setShowQuotation(true)}>Quotation</a>
+          <button className="book-car-btn" onClick={scrollToCars}>
+            Book a Car ↓
+          </button>
           <button className="nav-btn" onClick={() => {setToken(''); setShowAuth(true);}}>
             Logout
           </button>
@@ -232,112 +313,134 @@ function App() {
       </header>
 
       <main className="main-content">
-        <section className="cars-section">
-          <h2>Available Cars</h2>
-          <div className="cars-grid">
-            {Array.isArray(cars) && cars.map((car) => (
-              <div key={car.id} className="car-card">
-                <div className="car-image">
-                  <img src="/gtr.png" alt={car.model} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-                </div>
-                <div className="car-info">
-                  <h3>{car.model}</h3>
-                  <p className="car-type">{car.type}</p>
-                  <p className="car-price">₱{car.price_per_day}/day</p>
-                  <button 
-                    className="book-btn"
-                    onClick={() => setSelectedCar(car)}
-                  >
-                    Book Now
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        
 
-        {selectedCar && (
-          <div className="booking-modal">
-            <div className="modal-content">
-              <h3>Book {selectedCar.model}</h3>
-              <div className="booking-form">
-                <input
-                  type="date"
-                  placeholder="Start Date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  required
-                />
-                <input
-                  type="date"
-                  placeholder="End Date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  required
-                />
-                <div className="modal-buttons">
-                  <button 
-                    className="confirm-btn"
-                    onClick={() => handleBooking(selectedCar)}
-                  >
-                    Confirm Booking
-                  </button>
-                  <button 
-                    className="cancel-btn"
-                    onClick={() => setSelectedCar(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
+        {/* Booking Modal */}
+        {showBookingModal && selectedCar && (
+          <div className="booking-modal-overlay" onClick={() => setShowBookingModal(false)}>
+            <div className="booking-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="booking-modal-header">
+                <h2>Book {selectedCar.model}</h2>
+                <button 
+                  className="close-booking-modal" 
+                  onClick={() => setShowBookingModal(false)}
+                >
+                  &times;
+                </button>
               </div>
-            </div>
-          </div>
-        )}
+              <div className="booking-modal-body">
+                <div className="booking-form-group">
+                  <label>Start Date:</label>
+                  <input 
+                    type="date" 
+                    className="booking-form-control"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className="booking-form-group">
+                  <label>End Date:</label>
+                  <input 
+                    type="date" 
+                    className="booking-form-control"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    min={startDate || new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                
+                {/* Payment Method Selection */}
+                <div className="booking-form-group">
+                  <label>Payment Method:</label>
+                  <select 
+                    className="booking-form-control"
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  >
+                    <option value="">Select payment method</option>
+                    <option value="cash">Cash on Pickup</option>
+                    <option value="gcash">GCash</option>
+                    <option value="credit">Credit Card</option>
+                    <option value="debit">Debit Card</option>
+                  </select>
+                </div>
 
-        {showQuotation && (
-          <div className="booking-modal">
-            <div className="modal-content">
-              <h3>Get a Quotation</h3>
-              <div className="booking-form">
-                <select onChange={(e) => setSelectedCar(cars.find(c => c.id == e.target.value))}>
-                  <option value="">Select a car</option>
-                  {cars && cars.length > 0 ? (
-                    cars.map(car => (
-                      <option key={car.id} value={car.id}>{car.model} - ₱{car.price_per_day}/day</option>
-                    ))
-                  ) : (
-                    <option value="">No cars available</option>
-                  )}
-                </select>
-                <input
-                  type="date"
-                  placeholder="Start Date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-                <input
-                  type="date"
-                  placeholder="End Date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-                {selectedCar && startDate && endDate && (
-                  <div className="quotation-result">
-                    <h4>Quotation Summary</h4>
-                    <p><strong>Car:</strong> {selectedCar.model}</p>
-                    <p><strong>Daily Rate:</strong> ₱{selectedCar.price_per_day}</p>
-                    <p><strong>Days:</strong> {Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24))}</p>
-                    <p><strong>Total Price:</strong> ₱{Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) * selectedCar.price_per_day}</p>
+                {paymentMethod === 'gcash' && (
+                  <div className="booking-form-group">
+                    <label>GCash Mobile Number:</label>
+                    <input 
+                      type="text"
+                      className="form-control"
+                      placeholder="09XXXXXXXXX"
+                      value={gcashNumber}
+                      onChange={(e) => setGcashNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                    />
                   </div>
                 )}
-                <div className="modal-buttons">
-                  <button 
-                    className="cancel-btn"
-                    onClick={() => {setShowQuotation(false); setSelectedCar(null); setStartDate(''); setEndDate('');}}
-                  >
-                    Close
-                  </button>
-                </div>
+
+                {(paymentMethod === 'credit' || paymentMethod === 'debit') && (
+                  <>
+                    <div className="booking-form-group">
+                      <label>Card Number:</label>
+                      <input 
+                        type="text"
+                        className="booking-form-control"
+                        placeholder="1234 5678 9012 3456"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ').slice(0, 19))}
+                      />
+                    </div>
+                    <div className="booking-form-row">
+                      <div className="booking-form-group">
+                        <label>Expiry Date (MM/YY):</label>
+                        <input 
+                          type="text"
+                          className="booking-form-control"
+                          placeholder="MM/YY"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(e.target.value.replace(/\D/g, '').replace(/^(\d{2})(\d{0,2})/, '$1/$2').slice(0, 5))}
+                        />
+                      </div>
+                      <div className="booking-form-group">
+                        <label>CVV:</label>
+                        <input 
+                          type="text"
+                          className="booking-form-control"
+                          placeholder="123"
+                          value={cardCvc}
+                          onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {startDate && endDate && (
+                  <div className="booking-summary">
+                    <h4>Booking Summary</h4>
+                    <p><strong>Car:</strong> {selectedCar.model}</p>
+                    <p><strong>Price per day:</strong> ₱{selectedCar.price_per_day}</p>
+                    <p><strong>Total days:</strong> {calculateTotalDays()}</p>
+                    <p className="total-price"><strong>Total:</strong> ₱{calculateTotalPrice()}</p>
+                  </div>
+                )}
+              </div>
+              <div className="booking-modal-footer">
+                <button 
+                  className="booking-btn booking-btn-secondary" 
+                  onClick={() => setShowBookingModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="booking-btn booking-btn-primary"
+                  onClick={handleBookingSubmit}
+                  disabled={!startDate || !endDate || (paymentMethod === 'gcash' && !gcashNumber) || 
+                           ((paymentMethod === 'credit' || paymentMethod === 'debit') && (!cardNumber || !cardExpiry || !cardCvc))}
+                >
+                  Confirm Booking
+                </button>
               </div>
             </div>
           </div>
@@ -346,17 +449,18 @@ function App() {
         <section className="bookings-section">
           <h2>Your Bookings</h2>
           <div className="bookings-list">
-            {Array.isArray(bookings) && bookings.map((booking) => (
-              <div key={booking.id} className="booking-card">
-                <h3>Booking #{booking.id}</h3>
-                <p><strong>Car:</strong> {booking.car}</p>
-                <p><strong>From:</strong> {booking.start_date}</p>
-                <p><strong>To:</strong> {booking.end_date}</p>
-                <p className="booking-price"><strong>Total:</strong> ₱{booking.total_price}</p>
-              </div>
-            ))}
-            {(!bookings || bookings.length === 0) && (
-              <p className="no-bookings">No bookings yet</p>
+            {Array.isArray(bookings) && bookings.length > 0 ? (
+              bookings.map((booking) => (
+                <div key={booking.id} className="booking-card">
+                  <h3>Booking #{booking.id}</h3>
+                  <p><strong>Car:</strong> {booking.car}</p>
+                  <p><strong>From:</strong> {booking.start_date}</p>
+                  <p><strong>To:</strong> {booking.end_date}</p>
+                  <p className="booking-price"><strong>Total:</strong> ₱{booking.total_price}</p>
+                </div>
+              ))
+            ) : (
+              <p>No bookings found. Book a car to see your reservations here.</p>
             )}
           </div>
         </section>

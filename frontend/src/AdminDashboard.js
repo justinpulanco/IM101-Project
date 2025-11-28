@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 export default function AdminDashboard({ apiBase, token, onLogout }) {
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
-  const [activeTab, setActiveTab] = useState('cars'); // 'cars', 'users', or 'add-cars'
+  const [bookings, setBookings] = useState([]);
+  const [activeTab, setActiveTab] = useState('cars'); // 'cars', 'users', 'bookings', or 'add-cars'
   const [loading, setLoading] = useState(false);
 
   const authHeaders = { Authorization: `Bearer ${token}` };
@@ -36,6 +37,7 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
   useEffect(() => {
     loadCars();
     loadUsers();
+    loadBookings();
   }, []);
 
   const loadCars = async () => {
@@ -64,19 +66,37 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
     setLoading(false);
   };
 
+  const loadBookings = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/bookings`, { headers: authHeaders });
+      const data = await res.json();
+      setBookings(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('loadBookings', err);
+      alert('Error loading bookings');
+    }
+    setLoading(false);
+  };
+
   const handleToggleCarAvailability = async (carId, currentStatus) => {
     try {
       const res = await fetch(`${apiBase}/cars/${carId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
-        body: JSON.stringify({ is_available: !currentStatus }),
+        body: JSON.stringify({ 
+          availability: currentStatus ? 0 : 1, // Toggle between 0 and 1 to match backend expectations
+        }),
       });
       const data = await res.json();
-      alert(data.message || 'Updated');
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to update car');
+      }
+      alert(data.message || 'Updated successfully');
       loadCars();
     } catch (err) {
-      console.error('toggle car', err);
-      alert('Error updating car');
+      console.error('Error toggling car availability:', err);
+      alert(err.message || 'Error updating car. Please try again.');
     }
   };
 
@@ -148,6 +168,12 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
           onClick={() => setActiveTab('users')}
         >
           👥 Users ({users.length})
+        </button>
+        <button
+          className={`admin-tab ${activeTab === 'bookings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('bookings')}
+        >
+          📅 Bookings ({bookings.length})
         </button>
         <button
           className={`admin-tab ${activeTab === 'add-cars' ? 'active' : ''}`}
@@ -240,6 +266,42 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
                           Delete
                         </button>
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'bookings' && (
+        <div className="admin-section">
+          <h2>All Bookings</h2>
+          {bookings.length === 0 ? (
+            <p>No bookings found</p>
+          ) : (
+            <div className="admin-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Car</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Total Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bookings.map((booking) => (
+                    <tr key={booking.id}>
+                      <td>{booking.id}</td>
+                      <td>{booking.user || 'N/A'}</td>
+                      <td>{booking.car || 'N/A'}</td>
+                      <td>{booking.start_date ? new Date(booking.start_date).toLocaleDateString() : 'N/A'}</td>
+                      <td>{booking.end_date ? new Date(booking.end_date).toLocaleDateString() : 'N/A'}</td>
+                      <td>₱{booking.total_price || 0}</td>
                     </tr>
                   ))}
                 </tbody>

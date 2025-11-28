@@ -2,10 +2,12 @@ const db = require('../config/db');
 
 exports.getAllCars = async (req, res) => {
     try {
-        const sql = 'SELECT * FROM cars WHERE is_available = true';
+        const sql = 'SELECT * FROM cars';
         const [results] = await db.query(sql);
+        console.log('Cars retrieved:', results.length);
         res.json(results);
     } catch (err) {
+        console.error('Error fetching cars:', err);
         res.status(500).json({ message: 'Error fetching cars', error: err.message });
     }
 };
@@ -24,23 +26,18 @@ exports.getCarById = async (req, res) => {
 };
 
 exports.addCar = async (req, res) => {
-    const { model, brand, make, year, price_per_day, is_available, type, transmission, image } = req.body;
-    const carBrand = brand || make; // Accept both brand and make
+    const { model, type, price_per_day, availability } = req.body;
     
-    if (!model || !carBrand || !year || !price_per_day) 
-        return res.status(400).json({ message: 'Missing fields' });
+    if (!model || !type || !price_per_day) 
+        return res.status(400).json({ message: 'Missing required fields: model, type, price_per_day' });
 
     try {
-        const sql = 'INSERT INTO cars (model, brand, year, price_per_day, is_available, type, transmission, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        const sql = 'INSERT INTO cars (model, type, price_per_day, availability) VALUES (?, ?, ?, ?)';
         const [result] = await db.query(sql, [
             model, 
-            carBrand, 
-            year, 
+            type, 
             price_per_day, 
-            is_available ?? true,
-            type || 'Sedan',
-            transmission || 'Automatic',
-            image || null
+            availability ?? 1
         ]);
         res.status(201).json({ message: 'Car added', carId: result.insertId });
     } catch (err) {
@@ -52,14 +49,13 @@ exports.updateCar = async (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
 
-    const { model, brand, year, price_per_day, is_available } = req.body;
+    const { model, type, price_per_day, availability } = req.body;
     const updates = [], values = [];
 
     if (model) { updates.push('model = ?'); values.push(model); }
-    if (brand) { updates.push('brand = ?'); values.push(brand); }
-    if (year) { updates.push('year = ?'); values.push(year); }
+    if (type) { updates.push('type = ?'); values.push(type); }
     if (price_per_day) { updates.push('price_per_day = ?'); values.push(price_per_day); }
-    if (is_available !== undefined) { updates.push('is_available = ?'); values.push(is_available); }
+    if (availability !== undefined) { updates.push('availability = ?'); values.push(availability); }
 
     if (updates.length === 0) return res.status(400).json({ message: 'No fields to update' });
 

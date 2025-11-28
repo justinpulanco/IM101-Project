@@ -2,11 +2,14 @@ const db = require('../config/db');
 
 exports.createBooking = async (req, res) => {
   const { user_id, car_id, start_date, end_date, total_price } = req.body;
-  if (!user_id || !car_id || !start_date || !end_date)
+  console.log('createBooking called with body:', req.body);
+  if (!user_id || !car_id || !start_date || !end_date) {
+    console.warn('createBooking missing fields:', { user_id, car_id, start_date, end_date });
     return res.status(400).json({ message: 'All fields required' });
+  }
 
   try {
-    const [carResults] = await db.query('SELECT * FROM cars WHERE id = ? AND is_available = true', [car_id]);
+    const [carResults] = await db.query('SELECT * FROM cars WHERE id = ? AND availability = 1', [car_id]);
     if (carResults.length === 0) return res.status(400).json({ message: 'Car not available' });
 
     const overlapQuery = `
@@ -47,7 +50,7 @@ exports.getBookings = async (req, res) => {
 exports.getUserBookings = async (req, res) => {
   const { user_id } = req.params;
   const sql = `
-    SELECT b.id, c.model AS car, c.brand, c.type, b.start_date, b.end_date, b.total_price
+    SELECT b.id, c.model AS car, c.type, b.start_date, b.end_date, b.total_price, b.payment_status
     FROM bookings b
     LEFT JOIN cars c ON b.car_id = c.id
     WHERE b.user_id = ?
@@ -91,11 +94,56 @@ exports.updateBooking = async (req, res) => {
   }
 };
 
+exports.checkAvailability = async (req, res) => {
+  const { car_id, start_date, end_date } = req.body;
+  
+  if (!car_id || !start_date || !end_date) {
+    return res.status(400).json({ message: 'car_id, start_date, and end_date required', available: false });
+  }
+
+  try {
+    // Check if car exists and is available
+    const [carResults] = await db.query('SELECT * FROM cars WHERE id = ? AND availability = 1', [car_id]);
+    if (carResults.length === 0) {
+      return res.json({ available: false, message: 'Car not available' });
+    }
+
+    // Check for overlapping bookings
+    const overlapQuery = `
+      SELECT * FROM bookings WHERE car_id = ? AND
+      (start_date < ? AND end_date > ?)
+    `;
+    const [overlapResults] = await db.query(overlapQuery, [car_id, end_date, start_date]);
+    
+    if (overlapResults.length > 0) {
+      return res.json({ available: false, message: 'Car already booked for these dates' });
+    }
+
+    res.json({ available: true, message: 'Car is available for booking' });
+  } catch (err) {
+    res.status(500).json({ available: false, message: 'DB error', error: err.message });
+  }
+};
+
 exports.deleteBooking = async (req, res) => {
   const { id } = req.params;
   if (!id || isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
 
   try {
+    const [rows] = await db.query('SELECT * FROM bookings WHERE id = ?', [id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Booking not found' });
+    const booking = rows[0];
+
+    // If payment_status is 'paid' (admin already transacted), disallow deletion
+    if (booking.payment_status && booking.payment_status === 'paid') {
+      return res.status(400).json({ message: 'Cannot delete booking after payment/transaction' });
+    }
+
+    // If verifyToken set req.user, ensure the requester owns the booking
+    if (req.user && Number(req.user.id) !== Number(booking.user_id)) {
+      return res.status(403).json({ message: 'Not allowed to delete this booking' });
+    }
+
     const [result] = await db.query('DELETE FROM bookings WHERE id = ?', [id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Booking not found' });
     res.json({ message: 'Booking deleted' });
