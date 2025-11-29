@@ -271,28 +271,151 @@ function App() {
     setShowPublicDashboard(false);
   };
 
-  // search cars (simple fetch all then client filter)
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  // search cars and handle redirection
+  // Add this function to map car makes and models to their image paths
+  const getCarImage = (make, model) => {
+    if (!make || !model) return null;
+    
+    let imagePath = null;
+    
+    // Map of car makes and models to their image filenames
+    const carImageMap = {
+      'chevrolet': {
+        'camaro': 'public/reviews/1967 Chevrolet Camaro.png'
+      },
+      'dodge': {
+        'charger': '/1970 Dodge Charger.png',
+        'challenger': '/2008 Dodge Challenger SRT8.png'
+      },
+      'mazda': {
+        'rx-7': '/1993 Mazda RX-7 FD.png'
+      },
+      'honda': {
+        'civic': '/1995 Honda Civic EG.png',
+        'cr-v': '/Honda CR-V.png'
+      },
+      'mitsubishi': {
+        'eclipse': '/1995 Mitsubishi Eclipse.png'
+      },
+      'toyota': {
+        'supra': '/1995 Toyota Supra Mk4.png',
+        'vios': '/reviews/Toyota Vios.png'
+      },
+      'nissan': {
+        'skyline': '/1999 Nissan Skyline GT-R R34.png',
+        'silvia': '/2002 Nissan Silvia S15.png',
+        '350z': '/2006 Nissan 350Z.png',
+        'almera': '/nissan almera.png'
+      },
+      'ford': {
+        'ranger': '/Ford Ranger.png'
+      },
+      'hyundai': {
+        'accent': '/Hyundai Accent.png'
+      }
+    };
+    
+    // Try to find a matching image
+    const makeLower = make.toLowerCase().trim();
+    const modelLower = model.toLowerCase().trim();
+    
+    // First try exact match
+    if (carImageMap[makeLower] && carImageMap[makeLower][modelLower]) {
+      return carImageMap[makeLower][modelLower];
+    }
+    
+    // If no exact match, try partial matches in the model names
+  // First try to find matching make
+  if (carImageMap[makeLower]) {
+    // Then try to find a model that contains the search term
+    const models = carImageMap[makeLower];
+    for (const [modelKey, path] of Object.entries(models)) {
+      if (modelLower.includes(modelKey) || modelKey.includes(modelLower)) {
+        imagePath = path;
+        break;
+      }
+    }
+  }
+  
+  return imagePath || null;
+  };
+
+  const handleSearch = async (searchTerm = '', redirect = false) => {
     try {
       const res = await fetch(`${API}/cars`);
       const data = await res.json();
-      // naive filter by location text (case-insensitive) if provided
-      const form = e.target;
-      const loc = form.querySelector('input[type=text]')?.value?.toLowerCase() || '';
+      // naive filter by location or model text (case-insensitive) if provided
+      const loc = searchTerm.toLowerCase().trim();
       let items = Array.isArray(data) ? data : [];
+      let filteredItems = items;
+      
       if (loc) {
-        items = items.filter((c) => (c.location || '').toLowerCase().includes(loc) || (c.model || '').toLowerCase().includes(loc));
+        filteredItems = items.filter((c) => 
+          (c.location || '').toLowerCase().includes(loc) || 
+          (c.model || '').toLowerCase().includes(loc) ||
+          (c.make || '').toLowerCase().includes(loc)
+        );
       }
-      setSearchResults(items);
-      // scroll to featured results
-      setTimeout(() => {
-        const el = document.querySelector('.featured-section');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 120);
+      
+      setSearchResults(filteredItems);
+      
+      // Show error message if no cars found
+      if (loc && filteredItems.length === 0) {
+        // Remove any existing error message
+        const existingError = document.querySelector('.search-error');
+        if (existingError) existingError.remove();
+        
+        // Create and show error message
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'search-error';
+        errorMsg.textContent = 'No cars found. Please try a different search term.';
+        errorMsg.style.color = '#e74c3c';
+        errorMsg.style.marginTop = '10px';
+        errorMsg.style.textAlign = 'center';
+        errorMsg.style.fontSize = '14px';
+        
+        // Insert after the search form
+        const searchForm = document.querySelector('.search-form');
+        if (searchForm) {
+          searchForm.insertAdjacentElement('afterend', errorMsg);
+        }
+        
+        // Remove error message after 3 seconds
+        setTimeout(() => {
+          if (errorMsg.parentNode) {
+            errorMsg.style.opacity = '0';
+            setTimeout(() => errorMsg.remove(), 300);
+          }
+        }, 3000);
+      } else {
+        // Remove error message if there are results
+        const existingError = document.querySelector('.search-error');
+        if (existingError) existingError.remove();
+      }
+      
+      // If redirect is true and there are results, scroll to the featured section
+      if (redirect) {
+        if (filteredItems.length > 0) {
+          const featuredSection = document.querySelector('.featured-section');
+          if (featuredSection) {
+            featuredSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        } else {
+          // If no results and redirect is true, show all cars
+          setShowAllCars(true);
+          const allCarsSection = document.querySelector('.all-cars-section');
+          if (allCarsSection) {
+            allCarsSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }
+      
+      // Always return the filtered items
+      return filteredItems;
     } catch (err) {
       console.error('search', err);
       alert('Search failed');
+      return [];
     }
   };
 
@@ -339,13 +462,22 @@ function App() {
                 href="#home"
                 onClick={(e) => {
                   e.preventDefault();
+                  alert('Please log in to access this page');
                   setActiveTab('login');
                   setShowForms(true);
                 }}
               >
                 Home
               </a>
-              <a href="#reviews">Reviews</a>
+              <a 
+                href="#reviews"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Reviews
+              </a>
               <a href="#about">About</a>
             </div>
           )}
@@ -518,30 +650,71 @@ function App() {
             <div className="hero-inner">
               <img className="hero-car" src="/gtr.png" alt="car" />
               <div className="hero-search">
-                <form onSubmit={handleSearch} className="search-form">
-                  <input type="text" placeholder="Location" />
-                  <input type="date" placeholder="Start" />
-                  <input type="date" placeholder="Return" />
-                  <button className="search-btn" type="submit">🔍</button>
-                </form>
+                <div className="search-form" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', width: '100%', maxWidth: '600px', margin: '0 auto' }}>
+                  <input 
+                    type="text" 
+                    placeholder="Find a car model" 
+                    onChange={(e) => handleSearch(e.target.value)}
+                    style={{ 
+                      flex: 1, 
+                      padding: '10px', 
+                      borderRadius: '4px', 
+                      border: '1px solid #ddd',
+                      height: '40px',
+                      fontSize: '16px',
+                      width: '100%',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <button 
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      const input = document.querySelector('.search-form input');
+                      await handleSearch(input?.value || '', true);
+                    }}
+                    style={{
+                      background: '#e74c3c',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: 'white',
+                      padding: '0 15px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '40px',
+                      width: '40px',
+                      transition: 'background 0.3s',
+                      outline: 'none'
+                    }}
+                    onMouseOver={(e) => e.target.style.background = '#c0392b'}
+                    onMouseOut={(e) => e.target.style.background = '#e74c3c'}
+                    title="Search"
+                    type="button"
+                  >
+                    <span style={{ fontSize: '18px' }}>🔍</span>
+                  </button>
+                </div>
               </div>
               <div className="hero-welcome">
                 <h1>Welcome Back!</h1>
                 <p>Sign in to access your account and book amazing vehicles for your next adventure with Car2Go U-Drive.</p>
-                <div className="welcome-login-form">
-                  <button type="button" className="welcome-btn" onClick={() => setShowForms(true)}>Sign In</button>
-                </div>
               </div>
             </div>
           </div>
 
           {searchResults.length > 0 && (
             <div className="featured-section">
-              <h3>Search Results</h3>
+              <h3>Our Top Rentals</h3>
               <div className="cards-grid">
                 {searchResults.map((car) => (
                   <div key={car.id || car._id} className="car-card">
-                    <img src={car.image || '/gtr.png'} alt={car.model || 'car'} />
+                    <img 
+            src={car.image || getCarImage(car.make, car.model) || '/gtr.png'} 
+            onError={(e) => { e.target.src = '/gtr.png' }} 
+            alt={car.model || 'car'} 
+            style={{ width: '100%', height: '180px', objectFit: 'cover' }}
+          />
                     <div className="card-body">
                       <h4>{car.make ? `${car.make} ${car.model || ''}` : car.model}</h4>
                       <p className="price">{car.price_per_day || car.price ? `${currency.format(car.price_per_day || car.price)}/day` : '—'}</p>
@@ -552,6 +725,254 @@ function App() {
               </div>
             </div>
           )}
+
+          {/* Reviews Section */}
+          <div id="reviews-section" className="reviews-section" style={{ marginTop: '50px', padding: '40px 20px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+              <h2 style={{ color: 'white', display: 'inline-block', margin: '0 10px 0 0', verticalAlign: 'middle' }}>Customer Reviews</h2>
+              <div style={{ display: 'inline-block', color: '#f1c40f', fontSize: '24px', verticalAlign: 'middle' }}>★★★★☆</div>
+            </div>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+              gap: '20px', 
+              padding: '0 20px',
+              maxWidth: '1200px',
+              margin: '0 auto'
+            }}>
+              <div style={{ 
+                background: '#D4A017', 
+                padding: '25px', 
+                borderRadius: '10px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    marginRight: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#e74c3c',
+                    padding: '2px'
+                  }}>
+                    <img 
+                      src="/reviews/reviews photos/download.png" 
+                      alt="John D." 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>John D.</h4>
+                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
+                  </div>
+                </div>
+                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Amazing service! The car was clean and in perfect condition. Will definitely rent again!"</p>
+              </div>
+              
+              <div style={{ 
+                background: '#D4A017', 
+                padding: '25px', 
+                borderRadius: '10px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    marginRight: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#e74c3c',
+                    padding: '2px'
+                  }}>
+                    <img 
+                      src="/reviews/reviews%20photos/download (1).png" 
+                      alt="Hector M." 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '50%'
+                      }}
+                      onError={(e) => {
+                        console.log('Failed to load image at:', e.target.src);
+                        e.target.src = '/user-icon.png';
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Hector M.</h4>
+                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★☆</div>
+                  </div>
+                </div>
+                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Great selection of cars and very easy booking process. The customer service was excellent!"</p>
+              </div>
+              
+              <div style={{ 
+                background: '#D4A017', 
+                padding: '25px', 
+                borderRadius: '10px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <div style={{
+                    width: '50px',
+                    height: '50px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    marginRight: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#e74c3c',
+                    padding: '2px'
+                  }}>
+                    <img 
+                      src="/reviews/reviews%20photos/download(2).png"
+                      alt="Tom P." 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Tom P.</h4>
+                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
+                  </div>
+                </div>
+                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Best car rental experience ever! The prices are fair and the cars are well-maintained."</p>
+              </div>
+
+              <div style={{ 
+                background: '#D4A017', 
+                padding: '25px', 
+                borderRadius: '10px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    marginRight: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#e74c3c',
+                    padding: '2px'
+                  }}>
+                    <img 
+                      src="/reviews/reviews%20photos/download (3).png"
+                      alt="Anna S." 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Kevin G.</h4>
+                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
+                  </div>
+                </div>
+                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Very convenient and easy to use. The car was clean and ready when I arrived. Highly recommended!"</p>
+              </div>
+
+              <div style={{ 
+                background: '#D4A017', 
+                padding: '25px', 
+                borderRadius: '10px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    marginRight: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#e74c3c',
+                    padding: '2px'
+                  }}>
+                    <img 
+                      src="/reviews/reviews%20photos/download(4).png"
+                      alt="Mike R." 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Mike R.</h4>
+                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
+                  </div>
+                </div>
+                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Excellent customer service and great selection of vehicles. Will definitely be using Car2Go again for my next trip!"</p>
+              </div>
+
+              <div style={{ 
+                background: '#D4A017', 
+                padding: '25px', 
+                borderRadius: '10px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    marginRight: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#e74c3c',
+                    padding: '2px'
+                  }}>
+                    <img 
+                      src="/reviews/reviews%20photos/download(5).png" 
+                      alt="Nate R." 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        borderRadius: '50%'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Nate R.</h4>
+                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
+                  </div>
+                </div>
+                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Quick and easy booking process. The car was in perfect condition and the rates were very reasonable. 5-star experience!"</p>
+              </div>
+            </div>
+          </div>
 
           {showForms && (
             <div className="modal-overlay visible">

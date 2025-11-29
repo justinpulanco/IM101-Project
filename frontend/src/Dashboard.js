@@ -208,7 +208,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
                     className="rental-btn"
                     onClick={() => openBookingModal(car)}
                   >
-                    Book this car
+                    Rent this car
                   </button>
                 </div>
               </div>

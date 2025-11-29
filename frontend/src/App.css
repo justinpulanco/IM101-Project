@@ -470,6 +470,85 @@ body {
   font-size: 13px;
 }
 
+/* SEARCH RESULTS SECTION */
+.featured-section {
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+  margin: 40px 0;
+  border-radius: 12px;
+}
+
+.featured-section h3 {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 30px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.car-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  border: 1px solid #f0f0f0;
+}
+
+.car-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  border-color: var(--brand-red);
+}
+
+.car-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  background: #fafafa;
+  padding: 12px;
+}
+
+.card-body {
+  padding: 16px;
+  text-align: left;
+}
+
+.card-body h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.card-body p {
+  margin: 6px 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.card-body p.price {
+  color: var(--brand-red);
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: 12px;
+}
+
+.card-body p.location {
+  color: #999;
+  font-size: 12px;
+}
+
 .hero-content {
   position: relative;
   z-index: 2;
@@ -1853,6 +1932,7 @@ body {
   /* Featured section */
   .featured-section {
     padding: 20px 12px;
+    margin: 20px 0;
   }
   
   .featured-section h3 {
@@ -1861,8 +1941,8 @@ body {
   }
   
   .cards-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
   }
   
   .car-card {
@@ -1870,7 +1950,7 @@ body {
   }
   
   .car-card img {
-    height: 180px;
+    height: 140px;
   }
   
   .card-body {
@@ -1878,11 +1958,11 @@ body {
   }
   
   .card-body h4 {
-    font-size: 16px;
+    font-size: 14px;
   }
   
   .card-body p {
-    font-size: 13px;
+    font-size: 12px;
   }
   
   /* Modal */
@@ -3168,6 +3248,53 @@ body {
 .modal-content.booking-modal-dashboard,
 .modal-content.booking-modal-dashboard * {
   color: #0f1720 !important;
+}
+
+/* Car Image Component */
+.car-image-container {
+  position: relative;
+  width: 100%;
+  height: 200px; /* Adjust based on your design */
+  overflow: hidden;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.car-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.image-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  color: #999;
+  font-size: 14px;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--brand-red);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Make placeholders darker so mm/dd/yyyy is visible */
