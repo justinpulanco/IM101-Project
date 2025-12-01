@@ -1,0 +1,39 @@
+:root {
+  /* Brand colors */
+  --brand-red: maroon;
+  --brand-red-dark: darkred;
+  --brand-green: forestgreen;
+  --accent: var(--brand-red);
+  --orange-1: var(--brand-red);
+  --orange-2: var(--brand-red-dark);
+  --muted: #55a78b;
+  --bg: linear-gradient(135deg, #1a0a0a 0%, #0d3d0d 100%);
+  --surface: rgb(167, 9, 9);
+  --card-bg-contrast: #0d2d0d;
+  --card-shadow: 0 10px 30px rgba(128, 0, 0, 0.3);
+  
+  /* Typography */
+  --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Border radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+  
+  /* Z-index */
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --z-navbar: 1200;
+}

@@ -11,18 +11,14 @@
 @import './styles/components/_buttons.css';
 @import './styles/components/_forms.css';
 @import './styles/components/_booking.css';
-@import './styles/components/_cards.css';
-@import './styles/components/_modals.css';
 
 /* Utilities */
 @import './styles/utilities/_spacing.css';
-@import './styles/utilities/_display.css';
 
 /* ==========================================================================
-   #GLOBAL STYLES
+   #BASE
    ========================================================================== */
 
-/* Base Styles */
 body {
   font-family: var(--font-primary);
   background: var(--bg);
@@ -99,6 +95,41 @@ ul, ol {
   margin-bottom: 1rem;
 }
 
+ul ul,
+ul ol,
+ol ol,
+ol ul {
+  margin-bottom: 0;
+}
+
+dt {
+  font-weight: 700;
+}
+
+dd {
+  margin-bottom: 0.5rem;
+  margin-left: 0;
+}
+
+/* Code */
+code {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 87.5%;
+  color: #e83e8c;
+  word-break: break-word;
+}
+
+/* Figures */
+figure {
+  margin: 0 0 1rem;
+}
+
+/* Images and content */
+img,
+svg {
+  vertical-align: middle;
+}
+
 /* Tables */
 table {
   border-collapse: collapse;
@@ -106,6 +137,11 @@ table {
   margin-bottom: 1rem;
   color: #212529;
   background-color: transparent;
+}
+
+th {
+  text-align: inherit;
+  text-align: -webkit-match-parent;
 }
 
 /* Forms */
@@ -122,6 +158,42 @@ button:not(:disabled) {
 /* Misc */
 [hidden] {
   display: none !important;
+}
+
+/* NAVBAR */
+.navbar h1::after {
+  content: ''; /* This will remove the 'Cars' text */
+  display: none;
+}
+
+.navbar {
+  background: rgba(255,255,255,0.02);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  /* reduced vertical padding to make navbar ~10px shorter */
+  padding: 10px 18px;
+  position: fixed;
+  top: env(safe-area-inset-top, 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  z-index: 1200;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+}
+
+/* When user is authenticated we add .navbar-auth to center logo+search
+   and keep the right-side controls anchored. */
+.navbar.navbar-auth .navbar-top {
+  justify-content: center;
+  position: relative;
+}
+
+.navbar.navbar-auth .navbar-right {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  gap: 18px;
 }
 
 .navbar-top {
@@ -1875,17 +1947,21 @@ button:not(:disabled) {
   }
 }
 
-/* Navbar Sign In button */
+
+/* MODAL TRIGGER BUTTON */
+
 .navbar-signin {
   background: var(--accent);
   color: #fff !important;
   border: none;
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto !important;
+  padding: 10px 14px;
   border-radius: 10px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  margin-left: 8px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.14);
 }
 
@@ -1893,37 +1969,16 @@ button:not(:disabled) {
   filter: brightness(0.96);
 }
 
-/* Tablet and below */
-@media (max-width: 768px) {
-  .navbar-signin {
-    padding: 10px 14px !important;
-    font-size: 15px !important;
-    border-radius: 10px !important;
-  }
-}
-
-/* Mobile specific */
-@media (max-width: 480px) {
-  .navbar-signin {
-    padding: 8px 12px !important;
-    font-size: 14px !important;
-  }
-}
-
 /* Navbar Logout button */
 .navbar-logout {
   background: transparent;
   color: #fff;
   border: 2px solid rgba(255,255,255,0.14);
-  border-radius: 10px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  margin-left: 8px;
   transition: background 0.12s ease, transform 0.08s ease, border-color 0.12s ease;
 }
 
@@ -1933,25 +1988,11 @@ button:not(:disabled) {
   border-color: rgba(255,255,255,0.28);
 }
 
-/* Icon-only pill logout */
-.navbar-logout.icon-pill {
-  width: 46px;
-  height: 42px;
-  padding: 0 16px;
-  min-width: 46px;
-}
-
-.navbar-logout.icon-pill:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.28);
-}
-
 /* RESPONSIVE */
 @media (max-width: 768px) {
   /* Navbar adjustments */
   .navbar {
     /* reduce slightly on tablet/mobile too */
-    padding: 9px;
     padding: 9x;
     width: 98%;
     left: 1%;
@@ -4025,19 +4066,18 @@ button:not(:disabled) {
   border-color: transparent;
 }
 
-/* Navbar Icons */
-.navbar-icon svg,
-.navbar-logout svg {
+/* Icon SVG sizing */
+.navbar-icon svg {
   width: 18px;
   height: 18px;
   display: block;
 }
+.navbar-logout svg {
+  width: 18px;
+  height: 18px;
+}
 
-/* ==========================================================================
-   RESPONSIVE STYLES
-   ========================================================================== */
-
-/* 640px and below */
+/* Responsive: make popover full-width-ish on small screens */
 @media (max-width: 640px) {
   .navbar-search-popover {
     left: 8px;
@@ -4045,7 +4085,6 @@ button:not(:disabled) {
     top: 56px;
     min-width: auto;
   }
-  
   .navbar-search-popover .navbar-search-form input[type="text"] {
     font-size: 15px;
   }

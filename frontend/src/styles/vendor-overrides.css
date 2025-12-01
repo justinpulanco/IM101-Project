@@ -1,0 +1,116 @@
+/* ==========================================================================
+   #VENDOR OVERRIDES
+   ========================================================================== */
+
+/* React Modal Overrides */
+.ReactModal__Overlay {
+  opacity: 0;
+  transition: opacity 200ms ease-in-out;
+  z-index: var(--z-modal);
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
+/* Toast Notifications */
+.Toastify__toast {
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-base) !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 12px 16px !important;
+  min-height: auto !important;
+}
+
+.Toastify__toast--success {
+  background: var(--brand-green) !important;
+}
+
+.Toastify__toast--error {
+  background: var(--brand-red) !important;
+}
+
+/* React Datepicker */
+.react-datepicker {
+  font-family: var(--font-base) !important;
+  border: 1px solid var(--gray-200) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.react-datepicker__header {
+  background-color: var(--gray-100) !important;
+  border-bottom: 1px solid var(--gray-200) !important;
+  border-top-left-radius: var(--radius-md) !important;
+  border-top-right-radius: var(--radius-md) !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--brand-blue) !important;
+}
+
+/* React Select */
+.react-select__control {
+  border: 1px solid var(--gray-300) !important;
+  min-height: 38px !important;
+  box-shadow: none !important;
+}
+
+.react-select__control--is-focused {
+  border-color: var(--brand-blue) !important;
+  box-shadow: 0 0 0 1px var(--brand-blue) !important;
+}
+
+.react-select__menu {
+  z-index: var(--z-dropdown) !important;
+}
+
+/* React Slick */
+.slick-slider {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -ms-touch-action: pan-y;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.slick-list {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.slick-slide {
+  float: left;
+  height: 100%;
+  min-height: 1px;
+}
+
+/* React Tooltip */
+.__react_component_tooltip {
+  padding: 8px 12px !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.4 !important;
+  z-index: var(--z-tooltip) !important;
+}
+
+/* React Loading Skeleton */
+.react-loading-skeleton {
+  --base-color: var(--gray-100) !important;
+  --highlight-color: var(--gray-200) !important;
+}

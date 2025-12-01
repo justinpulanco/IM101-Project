@@ -1,50 +1,77 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import Dashboard from './Dashboard';
 import AdminDashboard from './AdminDashboard';
+import HomePage from './pages/HomePage';
+import AuthPage from './pages/AuthPage';
+import AdminLoginPage from './pages/AdminLoginPage';
+import useApi from './hooks/useApi';
+import { authService, carService, bookingService } from './services/apiService';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+// AboutPage is rendered inside HomePage now
 
 function App() {
-  const [token, setToken] = useState('');
-  const [user, setUser] = useState(null);
+  // API hooks
+  const { callApi: callAuth, loading: authLoading, error: authError } = useApi();
+  const { callApi: callCar, loading: carLoading, error: carError } = useApi();
+  const { callApi: callBooking, loading: bookingLoading, error: bookingError } = useApi();
   
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // State management
+  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
   const [isAdminMode, setIsAdminMode] = useState(false);
-  const [adminToken, setAdminToken] = useState('');
-  const [adminEmail, setAdminEmail] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
+  const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken') || '');
   
+  // Form states
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [showForms, setShowForms] = useState(true);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+
+  // UI states
   const [activeTab, setActiveTab] = useState('login');
-  const [tabAnim, setTabAnim] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showPublicDashboard, setShowPublicDashboard] = useState(false);
   const [showAllCars, setShowAllCars] = useState(false);
   const [allCarsDisplay, setAllCarsDisplay] = useState([]);
-  // Booking modal state
+  const [showForms, setShowForms] = useState(true);
+  const [showNavbarSearch, setShowNavbarSearch] = useState(false);
+  const [showBookingsPopover, setShowBookingsPopover] = useState(false);
+  const [showCarDropdown, setShowCarDropdown] = useState(false);
+
+  
+  // Booking states
   const [showBooking, setShowBooking] = useState(false);
   const [bookingCarId, setBookingCarId] = useState('');
   const [carsList, setCarsList] = useState([]);
   const [bookingStart, setBookingStart] = useState('');
   const [bookingEnd, setBookingEnd] = useState('');
   const [bookingTotal, setBookingTotal] = useState('');
-  const [showBookingsPopover, setShowBookingsPopover] = useState(false);
   const [userBookings, setUserBookings] = useState([]);
-  const [showCarDropdown, setShowCarDropdown] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
   const [isAvailable, setIsAvailable] = useState(false);
-  const [showNavbarSearch, setShowNavbarSearch] = useState(false);
+  
+  // Refs
   const navbarSearchRef = useRef(null);
 
-  // currency formatter for PHP
+  // Currency formatter for PHP
   const currency = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 });
 
-  // recompute total price when car or dates change
+  // Handle API errors
   useEffect(() => {
+    const error = authError || carError || bookingError;
+    if (error) {
+      toast.error(error.message || 'An error occurred');
+    }
+  }, [authError, carError, bookingError]);
+
+  // Recompute total price when car or dates change
+  const calculateBookingTotal = useCallback(() => {
     if (!bookingCarId || !bookingStart || !bookingEnd) {
       setBookingTotal('');
       return;
@@ -58,42 +85,183 @@ function App() {
     setBookingTotal(days * rate);
   }, [bookingCarId, bookingStart, bookingEnd, carsList]);
 
-  // fetch cars for booking modal
-  const loadCarsForBooking = async () => {
+  // Recalculate booking total when dependencies change
+  useEffect(() => {
+    calculateBookingTotal();
+  }, [calculateBookingTotal]);
+
+  // Load cars for booking modal
+  const loadCarsForBooking = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/cars`);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await callCar(() => carService.getAll());
       setCarsList(Array.isArray(data) ? data : []);
       return data;
     } catch (err) {
       console.error('Error loading cars for booking:', err);
       setCarsList([]);
-      alert('Failed to load cars. Please try again.');
       return [];
     }
-  };
+  }, [callCar]);
 
-  // fetch all cars for display
-  const loadAllCars = async () => {
+  // Load all cars for display
+  const loadAllCars = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/cars`);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await callCar(() => carService.getAll());
       setAllCarsDisplay(Array.isArray(data) ? data : []);
       setShowAllCars(true);
     } catch (err) {
       console.error('Error loading cars:', err);
       setAllCarsDisplay([]);
-      alert('Failed to load cars. Please try again.');
     }
-  };
+  }, [callCar]);
+
+  // Handle user login
+  const handleLogin = useCallback(async (e) => {
+    if (e && e.preventDefault) {
+      e.preventDefault();
+      const email = e.target.email?.value || loginEmail;
+      const password = e.target.password?.value || loginPassword;
+      
+      try {
+        const response = await callAuth(() => authService.login(email, password));
+        if (response.token) {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
+          setToken(response.token);
+          setUser(response.user);
+          setIsAuthenticated(true);
+          setShowForms(false);
+          toast.success('Login successful!');
+          return true;
+        }
+        return false;
+      } catch (err) {
+        console.error('Login failed:', err);
+        toast.error(err.response?.data?.message || 'Login failed. Please try again.');
+        return false;
+      }
+    }
+    // Handle direct function call (from AuthPage)
+    else if (e && e.email && e.password) {
+      try {
+        const response = await callAuth(() => authService.login(e.email, e.password));
+        if (response.token) {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
+          setToken(response.token);
+          setUser(response.user);
+          setIsAuthenticated(true);
+          toast.success('Login successful!');
+          return true;
+        }
+        return false;
+      } catch (err) {
+        console.error('Login failed:', err);
+        return false;
+      }
+    }
+  }, [callAuth, loginEmail, loginPassword, setShowForms]);
+
+  // Handle user registration
+  const handleRegister = useCallback(async (e) => {
+    // Handle form submission
+    if (e && e.preventDefault) {
+      e.preventDefault();
+      try {
+        const name = e.target.name?.value || regName;
+        const email = e.target.email?.value || regEmail;
+        const password = e.target.password?.value || regPassword;
+        
+        const response = await callAuth(() => authService.register(name, email, password));
+        
+        if (response.user) {
+          // Auto-login after successful registration
+          const loginResponse = await callAuth(() => authService.login(email, password));
+          if (loginResponse.token) {
+            localStorage.setItem('token', loginResponse.token);
+            localStorage.setItem('user', JSON.stringify(loginResponse.user));
+            setToken(loginResponse.token);
+            setUser(loginResponse.user);
+            setIsAuthenticated(true);
+            toast.success('Registration and login successful!');
+            setShowForms(false);
+            return true;
+          }
+        }
+        return false;
+      } catch (err) {
+        console.error('Registration failed:', err);
+        toast.error(err.response?.data?.message || 'Registration failed. Please try again.');
+        return false;
+      }
+    } 
+    // Handle direct function call (from AuthPage)
+    else if (typeof e === 'string' && regEmail && regPassword) {
+      const name = e; // First argument is name in this case
+      const email = regEmail;
+      const password = regPassword;
+      
+      try {
+        const response = await callAuth(() => authService.register(name, email, password));
+        if (response.user) {
+          toast.success('Registration successful! Please login.');
+          setActiveTab('login');
+          return true;
+        }
+        return false;
+      } catch (err) {
+        console.error('Registration failed:', err);
+        return false;
+      }
+    }
+  }, [callAuth, regName, regEmail, regPassword, setActiveTab, setShowForms]);
 
   // Check car availability
+  const checkCarAvailability = useCallback(async (carId, startDate, endDate) => {
+    try {
+      const isAvailable = await callBooking(() => 
+        bookingService.checkAvailability(carId, startDate, endDate)
+      );
+      setIsAvailable(isAvailable);
+      return isAvailable;
+    } catch (err) {
+      console.error('Error checking car availability:', err);
+      return false;
+    }
+  }, [callBooking]);
+
+  // Create a new booking
+  const createBooking = useCallback(async (bookingData) => {
+    try {
+      const newBooking = await callBooking(() => 
+        bookingService.create(bookingData, token)
+      );
+      if (newBooking) {
+        toast.success('Booking created successfully!');
+        setShowBooking(false);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Error creating booking:', err);
+      return false;
+    }
+  }, [callBooking, token]);
+
+  // Load user bookings
+  const loadUserBookings = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const bookings = await callBooking(() => 
+        bookingService.getAll(token, { userId: user?.id })
+      );
+      setUserBookings(Array.isArray(bookings) ? bookings : []);
+    } catch (err) {
+      console.error('Error loading user bookings:', err);
+      setUserBookings([]);
+    }
+  }, [callBooking, isAuthenticated, token, user?.id]);
   const checkAvailability = async (carId, startDate, endDate) => {
     if (!carId || !startDate || !endDate) {
       setIsAvailable(false);
@@ -204,62 +372,7 @@ function App() {
     }
   }, [showNavbarSearch]);
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`${API}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: regName, email: regEmail, password: regPassword }),
-      });
-      const data = await res.json();
-      alert(data.message || JSON.stringify(data));
 
-      // Attempt to auto-login after successful registration
-      if (res.ok) {
-        const loginRes = await fetch(`${API}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: regEmail, password: regPassword }),
-        });
-        const loginData = await loginRes.json();
-        if (loginData.token) {
-          setToken(loginData.token);
-          setUser(loginData.user || null);
-          setIsAuthenticated(true);
-          localStorage.setItem('token', loginData.token);
-          if (loginData.user) localStorage.setItem('user', JSON.stringify(loginData.user));
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Registration failed');
-    }
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`${API}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
-      });
-      const data = await res.json();
-      if (data.token) {
-        setToken(data.token);
-        setUser(data.user || null);
-        setIsAuthenticated(true);
-        localStorage.setItem('token', data.token);
-        if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
-      } else {
-        alert(data.message || 'Login failed');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Login failed');
-    }
-  };
 
   // logout helper
   const handleLogout = () => {
@@ -274,37 +387,39 @@ function App() {
   // search cars and handle redirection
   // Add this function to map car makes and models to their image paths
   const getCarImage = (make, model) => {
-    if (!make || !model) return null;
-    
-    let imagePath = null;
+    if (!make && !model) return null;
     
     // Map of car makes and models to their image filenames
     const carImageMap = {
       'chevrolet': {
-        'camaro': 'public/reviews/1967 Chevrolet Camaro.png'
+        'camaro': '/1967 Chevrolet Camaro.png'
       },
       'dodge': {
         'charger': '/1970 Dodge Charger.png',
         'challenger': '/2008 Dodge Challenger SRT8.png'
       },
       'mazda': {
-        'rx-7': '/1993 Mazda RX-7 FD.png'
+        'rx-7': '/1993 Mazda RX-7 FD.png',
+        'rx7': '/1993 Mazda RX-7 FD.png'
       },
       'honda': {
         'civic': '/1995 Honda Civic EG.png',
-        'cr-v': '/Honda CR-V.png'
+        'cr-v': '/Honda CR-V.png',
+        'crv': '/Honda CR-V.png'
       },
       'mitsubishi': {
-        'eclipse': '/1995 Mitsubishi Eclipse.png'
+        'eclipse': '/1995 Mitsubishi Eclipse.png',
+        'xpander': '/Mitsubishi Xpander.webp'
       },
       'toyota': {
         'supra': '/1995 Toyota Supra Mk4.png',
-        'vios': '/reviews/Toyota Vios.png'
+        'vios': '/Toyota Vios.png'
       },
       'nissan': {
         'skyline': '/1999 Nissan Skyline GT-R R34.png',
         'silvia': '/2002 Nissan Silvia S15.png',
         '350z': '/2006 Nissan 350Z.png',
+        '350': '/2006 Nissan 350Z.png',
         'almera': '/nissan almera.png'
       },
       'ford': {
@@ -315,29 +430,46 @@ function App() {
       }
     };
     
-    // Try to find a matching image
-    const makeLower = make.toLowerCase().trim();
-    const modelLower = model.toLowerCase().trim();
+    // Handle case where we receive full model name or separated make/model
+    let makeLower = '';
+    let modelLower = '';
     
-    // First try exact match
-    if (carImageMap[makeLower] && carImageMap[makeLower][modelLower]) {
-      return carImageMap[makeLower][modelLower];
+    if (make && model) {
+      makeLower = make.toLowerCase().trim();
+      modelLower = model.toLowerCase().trim();
+    } else if (make && !model) {
+      // If only make is provided, it might be the full model name
+      const fullName = make.toLowerCase().trim();
+      const parts = fullName.split(' ');
+      makeLower = parts[0];
+      modelLower = parts.slice(1).join(' ');
+    } else if (!make && model) {
+      // If only model is provided, try to extract make from it
+      const fullName = model.toLowerCase().trim();
+      const parts = fullName.split(' ');
+      makeLower = parts[0];
+      modelLower = parts.slice(1).join(' ');
     }
     
-    // If no exact match, try partial matches in the model names
-  // First try to find matching make
-  if (carImageMap[makeLower]) {
-    // Then try to find a model that contains the search term
-    const models = carImageMap[makeLower];
-    for (const [modelKey, path] of Object.entries(models)) {
-      if (modelLower.includes(modelKey) || modelKey.includes(modelLower)) {
-        imagePath = path;
-        break;
+    // First try exact match with the make
+    if (makeLower && carImageMap[makeLower]) {
+      // Try exact match with full model
+      if (modelLower && carImageMap[makeLower][modelLower]) {
+        return carImageMap[makeLower][modelLower];
+      }
+      
+      // Try partial matches - check each model key
+      const models = carImageMap[makeLower];
+      for (const [modelKey, path] of Object.entries(models)) {
+        // Check if model contains the model key or vice versa
+        if (modelLower.includes(modelKey) || modelKey.includes(modelLower) || 
+            modelLower.startsWith(modelKey) || modelKey === modelLower.split(' ')[0]) {
+          return path;
+        }
       }
     }
-  }
-  
-  return imagePath || null;
+    
+    return null;
   };
 
   const handleSearch = async (searchTerm = '', redirect = false) => {
@@ -420,6 +552,13 @@ function App() {
   };
 
   // admin login handler
+
+  const handleAdminLogout = () => {
+    setAdminToken('');
+    setIsAdminMode(false);
+    localStorage.removeItem('adminToken');
+  };
+
   const handleAdminLogin = async (e) => {
     e.preventDefault();
     try {
@@ -444,18 +583,12 @@ function App() {
     }
   };
 
-  const handleAdminLogout = () => {
-    setAdminToken('');
-    setIsAdminMode(false);
-    localStorage.removeItem('adminToken');
-  };
-
   return (
     <div className="App">
       {/* Navbar */}
       <nav className={`navbar ${isAuthenticated ? 'navbar-auth' : ''}`}>
         <div className="navbar-top">
-          <div className="navbar-logo">Car2Go.</div>
+          <div className="navbar-logo">Car2Go</div>
           {!isAuthenticated && (
             <div className={`navbar-links ${isAuthenticated ? 'is-hidden' : ''}`}>
               <a
@@ -478,7 +611,17 @@ function App() {
               >
                 Reviews
               </a>
-              <a href="#about">About</a>
+              
+              <a 
+                href="#about"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById('about');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                About
+              </a>
             </div>
           )}
 
@@ -631,398 +774,45 @@ function App() {
 
       {/* Main content branches */}
       {isAdminMode && !adminToken ? (
-        <div className="admin-login-screen">
-          <div className="admin-login-container">
-            <h1>🔐 Admin Login</h1>
-            <form onSubmit={handleAdminLogin}>
-              <input type="email" placeholder="Email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} required />
-              <input type="password" placeholder="Password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} required />
-              <button type="submit" className="admin-login-btn">Login as Admin</button>
-            </form>
-            <button onClick={() => setIsAdminMode(false)} className="cancel-admin">Back to Customer</button>
-          </div>
-        </div>
+        <AdminLoginPage 
+          adminEmail={adminEmail}
+          setAdminEmail={setAdminEmail}
+          adminPassword={adminPassword}
+          setAdminPassword={setAdminPassword}
+          onAdminLogin={handleAdminLogin}
+          onBackToCustomer={() => setIsAdminMode(false)}
+        />
       ) : isAdminMode && adminToken ? (
         <AdminDashboard apiBase={API} token={adminToken} onLogout={handleAdminLogout} />
       ) : !isAuthenticated ? (
-        <div className="layout">
-          <div className="hero">
-            <div className="hero-inner">
-              <img className="hero-car" src="/gtr.png" alt="car" />
-              <div className="hero-search">
-                <div className="search-form" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', width: '100%', maxWidth: '600px', margin: '0 auto' }}>
-                  <input 
-                    type="text" 
-                    placeholder="Find a car model" 
-                    onChange={(e) => handleSearch(e.target.value)}
-                    style={{ 
-                      flex: 1, 
-                      padding: '10px', 
-                      borderRadius: '4px', 
-                      border: '1px solid #ddd',
-                      height: '40px',
-                      fontSize: '16px',
-                      width: '100%',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  <button 
-                    onClick={async (e) => {
-                      e.preventDefault();
-                      const input = document.querySelector('.search-form input');
-                      await handleSearch(input?.value || '', true);
-                    }}
-                    style={{
-                      background: '#e74c3c',
-                      border: 'none',
-                      borderRadius: '4px',
-                      color: 'white',
-                      padding: '0 15px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '40px',
-                      width: '40px',
-                      transition: 'background 0.3s',
-                      outline: 'none'
-                    }}
-                    onMouseOver={(e) => e.target.style.background = '#c0392b'}
-                    onMouseOut={(e) => e.target.style.background = '#e74c3c'}
-                    title="Search"
-                    type="button"
-                  >
-                    <span style={{ fontSize: '18px' }}>🔍</span>
-                  </button>
-                </div>
-              </div>
-              <div className="hero-welcome">
-                <h1>Welcome Back!</h1>
-                <p>Sign in to access your account and book amazing vehicles for your next adventure with Car2Go U-Drive.</p>
-              </div>
-            </div>
-          </div>
-
-          {searchResults.length > 0 && (
-            <div className="featured-section">
-              <h3>Our Top Rentals</h3>
-              <div className="cards-grid">
-                {searchResults.map((car) => (
-                  <div key={car.id || car._id} className="car-card">
-                    <img 
-            src={car.image || getCarImage(car.make, car.model) || '/gtr.png'} 
-            onError={(e) => { e.target.src = '/gtr.png' }} 
-            alt={car.model || 'car'} 
-            style={{ width: '100%', height: '180px', objectFit: 'cover' }}
+        <>
+          <HomePage 
+            searchResults={searchResults}
+            onSearch={handleSearch}
+            onLoadAllCars={loadAllCars}
+            currency={currency}
+            getCarImage={getCarImage}
+            API={API}
           />
-                    <div className="card-body">
-                      <h4>{car.make ? `${car.make} ${car.model || ''}` : car.model}</h4>
-                      <p className="price">{car.price_per_day || car.price ? `${currency.format(car.price_per_day || car.price)}/day` : '—'}</p>
-                      <p className="location">{car.location || 'Unknown'}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Reviews Section */}
-          <div id="reviews-section" className="reviews-section" style={{ marginTop: '50px', padding: '40px 20px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-              <h2 style={{ color: 'white', display: 'inline-block', margin: '0 10px 0 0', verticalAlign: 'middle' }}>Customer Reviews</h2>
-              <div style={{ display: 'inline-block', color: '#f1c40f', fontSize: '24px', verticalAlign: 'middle' }}>★★★★☆</div>
-            </div>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-              gap: '20px', 
-              padding: '0 20px',
-              maxWidth: '1200px',
-              margin: '0 auto'
-            }}>
-              <div style={{ 
-                background: '#D4A017', 
-                padding: '25px', 
-                borderRadius: '10px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    marginRight: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: '#e74c3c',
-                    padding: '2px'
-                  }}>
-                    <img 
-                      src="/reviews/reviews photos/download.png" 
-                      alt="John D." 
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        borderRadius: '50%'
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>John D.</h4>
-                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
-                  </div>
-                </div>
-                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Amazing service! The car was clean and in perfect condition. Will definitely rent again!"</p>
-              </div>
-              
-              <div style={{ 
-                background: '#D4A017', 
-                padding: '25px', 
-                borderRadius: '10px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    marginRight: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: '#e74c3c',
-                    padding: '2px'
-                  }}>
-                    <img 
-                      src="/reviews/reviews%20photos/download (1).png" 
-                      alt="Hector M." 
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        borderRadius: '50%'
-                      }}
-                      onError={(e) => {
-                        console.log('Failed to load image at:', e.target.src);
-                        e.target.src = '/user-icon.png';
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Hector M.</h4>
-                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★☆</div>
-                  </div>
-                </div>
-                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Great selection of cars and very easy booking process. The customer service was excellent!"</p>
-              </div>
-              
-              <div style={{ 
-                background: '#D4A017', 
-                padding: '25px', 
-                borderRadius: '10px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <div style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    marginRight: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: '#e74c3c',
-                    padding: '2px'
-                  }}>
-                    <img 
-                      src="/reviews/reviews%20photos/download(2).png"
-                      alt="Tom P." 
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        borderRadius: '50%'
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Tom P.</h4>
-                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
-                  </div>
-                </div>
-                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Best car rental experience ever! The prices are fair and the cars are well-maintained."</p>
-              </div>
-
-              <div style={{ 
-                background: '#D4A017', 
-                padding: '25px', 
-                borderRadius: '10px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    marginRight: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: '#e74c3c',
-                    padding: '2px'
-                  }}>
-                    <img 
-                      src="/reviews/reviews%20photos/download (3).png"
-                      alt="Anna S." 
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        borderRadius: '50%'
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Kevin G.</h4>
-                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
-                  </div>
-                </div>
-                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Very convenient and easy to use. The car was clean and ready when I arrived. Highly recommended!"</p>
-              </div>
-
-              <div style={{ 
-                background: '#D4A017', 
-                padding: '25px', 
-                borderRadius: '10px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    marginRight: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: '#e74c3c',
-                    padding: '2px'
-                  }}>
-                    <img 
-                      src="/reviews/reviews%20photos/download(4).png"
-                      alt="Mike R." 
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        borderRadius: '50%'
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Mike R.</h4>
-                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
-                  </div>
-                </div>
-                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Excellent customer service and great selection of vehicles. Will definitely be using Car2Go again for my next trip!"</p>
-              </div>
-
-              <div style={{ 
-                background: '#D4A017', 
-                padding: '25px', 
-                borderRadius: '10px',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    marginRight: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: '#e74c3c',
-                    padding: '2px'
-                  }}>
-                    <img 
-                      src="/reviews/reviews%20photos/download(5).png" 
-                      alt="Nate R." 
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        borderRadius: '50%'
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h4 style={{ color: '#555', display: 'inline-block', margin: '0 0 5px 0' }}>Nate R.</h4>
-                    <div style={{ color: '#f1c40f', fontSize: '20px' }}>★★★★★</div>
-                  </div>
-                </div>
-                <p style={{ margin: '0', lineHeight: '1.6', color: '#555' }}>"Quick and easy booking process. The car was in perfect condition and the rates were very reasonable. 5-star experience!"</p>
-              </div>
-            </div>
-          </div>
 
           {showForms && (
-            <div className="modal-overlay visible">
-              <div className="modal-content auth-modal">
-                <button className="modal-close" onClick={() => setShowForms(false)}>✕</button>
-                <div className="modal-tabs">
-                  <button className={`modal-tab ${activeTab === 'login' ? 'active' : ''}`} onClick={() => { setActiveTab('login'); setTabAnim(true); setTimeout(() => setTabAnim(false), 360); }}>Login</button>
-                  <button className={`modal-tab ${activeTab === 'register' ? 'active' : ''}`} onClick={() => { setActiveTab('register'); setTabAnim(true); setTimeout(() => setTabAnim(false), 360); }}>Register</button>
-                </div>
-
-                {activeTab === 'login' && (
-                  <div className="modal-form login-form">
-                    <h2>Login</h2>
-                    <form onSubmit={handleLogin}>
-                      <input type="email" placeholder="Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
-                      <input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
-                      <button type="submit">Login</button>
-                    </form>
-                    <div className="no-account">
-                      <span className="no-account-text">No account?</span>
-                      <button
-                        type="button"
-                        className="create-account-btn"
-                        onClick={() => {
-                          setActiveTab('register');
-                          setTabAnim(true);
-                          setTimeout(() => setTabAnim(false), 360);
-                        }}
-                      >
-                        Click Here
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'register' && (
-                  <div className="modal-form register-form">
-                    <h2>Register</h2>
-                    <form onSubmit={handleRegister}>
-                      <input type="text" placeholder="Name" value={regName} onChange={(e) => setRegName(e.target.value)} required />
-                      <input type="email" placeholder="Email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
-                      <input type="password" placeholder="Password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
-                      <button type="submit" className="secondary">Register</button>
-                    </form>
-                  </div>
-                )}
-              </div>
-            </div>
+            <AuthPage
+              onLogin={handleLogin}
+              onRegister={handleRegister}
+              loginEmail={loginEmail}
+              setLoginEmail={setLoginEmail}
+              loginPassword={loginPassword}
+              setLoginPassword={setLoginPassword}
+              regName={regName}
+              setRegName={setRegName}
+              regEmail={regEmail}
+              setRegEmail={setRegEmail}
+              regPassword={regPassword}
+              setRegPassword={setRegPassword}
+              onClose={() => setShowForms(false)}
+            />
           )}
-        </div>
+        </>
       ) : (
         <>
           <Dashboard apiBase={API} token={token} user={user} onLogout={() => { setToken(''); setUser(null); setIsAuthenticated(false); }} />
