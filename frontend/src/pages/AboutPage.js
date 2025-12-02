@@ -29,7 +29,7 @@ function AboutPage() {
             <p>
               With over 16 meticulously maintained vehicles in our fleet, competitive pricing, 
               and a commitment to customer satisfaction, we've become the go-to choice for 
-              car rentals in Manila and beyond.
+              car rentals in Davao and beyond Davao del Sur.
             </p>
           </div>
 

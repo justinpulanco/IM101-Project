@@ -1,11 +1,55 @@
 import React, { useState, useEffect } from 'react';
 
+// Loading spinner component
+const LoadingSpinner = ({ size = 20, color = '#3498db' }) => (
+  <div style={{
+    width: size,
+    height: size,
+    border: `2px solid #f3f3f3`,
+    borderTop: `2px solid ${color}`,
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    margin: '0 auto'
+  }} />
+);
+
+// Add CSS animation
+const styles = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+`;
+
+// Add styles to head
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);
+
 export default function AdminDashboard({ apiBase, token, onLogout }) {
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [activeTab, setActiveTab] = useState('cars'); // 'cars', 'users', 'bookings', or 'add-cars'
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({
+    cars: false,
+    users: false,
+    bookings: false,
+    action: null // 'toggle', 'delete', 'addAll'
+  });
 
   const authHeaders = { Authorization: `Bearer ${token}` };
 
@@ -29,6 +73,109 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
     'Toyota Vios.png',
   ];
 
+  
+
+  // Function to get car make from model and year
+  const getCarMake = (car) => {
+    if (car.brand) return car.brand;
+    
+    const model = car.model?.toLowerCase() || '';
+    
+    // Map of car filenames to their makes and years
+    const carMappings = {
+      // Toyota
+      'toyota vios.png': { make: 'Toyota', year: 2002 },
+      'toyota supra mk4.png': { make: 'Toyota', year: 1995 },
+      
+      // Honda
+      'honda civic eg.png': { make: 'Honda', year: 1995 },
+      'honda cr-v.png': { make: 'Honda', year: 2018 },
+      
+      // Nissan
+      'nissan almera.png': { make: 'Nissan', year: 1990 },
+      'nissan skyline gtr r34.png': { make: 'Nissan', year: 1994 },
+      'nissan silvia s15.png': { make: 'Nissan', year: 1993 },
+      'nissan 350z.png': { make: 'Nissan', year: 1999 },
+      
+      // Mitsubishi
+      'mitsubishi eclipse.png': { make: 'Mitsubishi', year: 1990 },
+      'mitsubishi xpander.webp': { make: 'Mitsubishi', year: 1992 },
+      
+      // Ford
+      'ford ranger.png': { make: 'Ford', year: 1970 },
+      
+      // Hyundai
+      'hyundai accent.png': { make: 'Hyundai', year: 1991 },
+      
+      // Mazda
+      'mazda rx-7 fd.png': { make: 'Mazda', year: 1993 },
+      
+      // Dodge
+      'dodge challenger srt8.png': { make: 'Dodge', year: 2008 },
+      'dodge charger.png': { make: 'Dodge', year: 1970 },
+      
+      // Chevrolet
+      'chevrolet camaro.png': { make: 'Chevrolet', year: 1967 }
+    };
+    
+    // Try to find exact match by filename first
+    const filename = model.toLowerCase() + (model.endsWith('.png') || model.endsWith('.webp') ? '' : '.png');
+    if (carMappings[filename]) {
+      return carMappings[filename].make;
+    }
+    
+    // If no exact match, try partial matching
+    for (const [key, value] of Object.entries(carMappings)) {
+      if (model.includes(key.split('.')[0])) {
+        return value.make;
+      }
+    }
+    
+    return 'N/A';
+  };
+  
+  // Function to get car year from model
+  const getCarYear = (car) => {
+    if (car.year) return car.year;
+    
+    const model = car.model?.toLowerCase() || '';
+    
+    // Same mapping as above but for years
+    const yearMappings = {
+      'toyota vios.png': 2002,
+      'toyota supra mk4.png': 1995,
+      'honda civic eg.png': 1995,
+      'honda cr-v.png': 2018,
+      'nissan almera.png': 1990,
+      'nissan skyline gtr r34.png': 1994,
+      'nissan silvia s15.png': 1993,
+      'nissan 350z.png': 1999,
+      'mitsubishi eclipse.png': 1990,
+      'mitsubishi xpander.webp': 1992,
+      'ford ranger.png': 1970,
+      'hyundai accent.png': 1991,
+      'mazda rx-7 fd.png': 1993,
+      'dodge challenger srt8.png': 2008,
+      'dodge charger.png': 1970,
+      'chevrolet camaro.png': 1967
+    };
+    
+    // Try to find exact match by filename first
+    const filename = model.toLowerCase() + (model.endsWith('.png') || model.endsWith('.webp') ? '' : '.png');
+    if (yearMappings[filename] !== undefined) {
+      return yearMappings[filename];
+    }
+    
+    // If no exact match, try partial matching
+    for (const [key, year] of Object.entries(yearMappings)) {
+      if (model.includes(key.split('.')[0])) {
+        return year;
+      }
+    }
+    
+    return 'N/A';
+  };
+
   // Function to get clean car name from filename
   const getCarNameFromFile = (filename) => {
     return filename.replace(/\.(png|webp|jpg|jpeg)$/i, '');
@@ -41,67 +188,118 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
   }, []);
 
   const loadCars = async () => {
-    setLoading(true);
+    setLoading(prev => ({ ...prev, cars: true }));
     try {
       const res = await fetch(`${apiBase}/cars`, { headers: authHeaders });
       const data = await res.json();
       setCars(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('loadCars', err);
-      alert('Error loading cars');
+    } catch (error) {
+      console.error('Error loading cars:', error);
+      alert('Failed to load cars');
+    } finally {
+      setLoading(prev => ({ ...prev, cars: false }));
     }
-    setLoading(false);
   };
 
   const loadUsers = async () => {
-    setLoading(true);
+    setLoading(prev => ({ ...prev, users: true }));
     try {
       const res = await fetch(`${apiBase}/auth/users`, { headers: authHeaders });
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('loadUsers', err);
-      alert('Error loading users');
+    } catch (error) {
+      console.error('Error loading users:', error);
+      alert('Failed to load users');
+    } finally {
+      setLoading(prev => ({ ...prev, users: false }));
     }
-    setLoading(false);
   };
 
   const loadBookings = async () => {
-    setLoading(true);
+    setLoading(prev => ({ ...prev, bookings: true }));
     try {
       const res = await fetch(`${apiBase}/bookings`, { headers: authHeaders });
       const data = await res.json();
       setBookings(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('loadBookings', err);
-      alert('Error loading bookings');
+    } catch (error) {
+      console.error('Error loading bookings:', error);
+      alert('Failed to load bookings');
+    } finally {
+      setLoading(prev => ({ ...prev, bookings: false }));
     }
-    setLoading(false);
   };
 
   const handleToggleCarAvailability = async (carId, currentStatus) => {
+    setLoading(prev => ({ ...prev, action: 'toggle' }));
+    const originalCars = [...cars];
+    
     try {
+      const confirmed = window.confirm(
+        `Are you sure you want to mark this car as ${currentStatus ? 'unavailable' : 'available'}?`
+      );
+      if (!confirmed) return;
+      
+      setCars(prevCars => 
+        prevCars.map(car => 
+          car.id === carId 
+            ? { 
+                ...car, 
+                is_available: !currentStatus,
+                available: !currentStatus 
+              } 
+            : car
+        )
+      );
+
       const res = await fetch(`${apiBase}/cars/${carId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers: { 
+          'Content-Type': 'application/json', 
+          ...authHeaders 
+        },
         body: JSON.stringify({ 
-          availability: currentStatus ? 0 : 1, // Toggle between 0 and 1 to match backend expectations
+          availability: currentStatus ? 0 : 1,
         }),
       });
-      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error(data.message || 'Failed to update car');
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.message || 'Failed to update car availability');
       }
-      alert(data.message || 'Updated successfully');
-      loadCars();
+
+      const updatedCar = await res.json();
+      
+      setCars(prevCars => 
+        prevCars.map(car => 
+          car.id === carId 
+            ? { 
+                ...car, 
+                is_available: updatedCar.is_available || !currentStatus,
+                available: updatedCar.available || !currentStatus
+              } 
+            : car
+        )
+      );
+      
+      setTimeout(() => {
+        alert(`Car marked as ${!currentStatus ? 'available' : 'unavailable'} successfully!`);
+      }, 100);
+      
     } catch (err) {
+      setCars(originalCars);
       console.error('Error toggling car availability:', err);
-      alert(err.message || 'Error updating car. Please try again.');
+      alert(`Error: ${err.message || 'Failed to update car availability. Please try again.'}`);
+    } finally {
+      setLoading(prev => ({ ...prev, action: null }));
     }
   };
 
+  const [deletingUser, setDeletingUser] = useState(null);
+  const [updatingCar, setUpdatingCar] = useState(null);
+
   const handleDeleteUser = async (userId) => {
     if (!window.confirm('Delete this user?')) return;
+    setDeletingUser(userId);
     try {
       const res = await fetch(`${apiBase}/auth/users/${userId}`, {
         method: 'DELETE',
@@ -109,16 +307,23 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
       });
       const data = await res.json();
       alert(data.message || 'User deleted');
-      loadUsers();
+      await loadUsers();
     } catch (err) {
       console.error('delete user', err);
       alert('Error deleting user');
+    } finally {
+      setDeletingUser(null);
     }
   };
 
   // Add all car photos to database
+  const [addingCars, setAddingCars] = useState(false);
+
   const handleAddAllCars = async () => {
     if (!window.confirm(`Add ${allCarPhotos.length} cars to the database?`)) return;
+    
+    setAddingCars(true);
+    setLoading(prev => ({ ...prev, action: 'addAll' }));
     
     try {
       for (const photo of allCarPhotos) {
@@ -142,16 +347,26 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
       }
       alert(`✅ All ${allCarPhotos.length} cars have been added to the database!`);
       await loadCars();
+      setAddingCars(false);
+      setLoading(prev => ({ ...prev, action: null }));
       setActiveTab('cars');
     } catch (err) {
       console.error('Error adding cars:', err);
       alert('Error adding cars to database');
+    } finally {
+      setLoading(prev => ({ ...prev, cars: false }));
     }
   };
 
   return (
     <div className="admin-dashboard">
-      <div className="admin-header">
+      <div className="admin-container" style={{ position: 'relative' }}>
+        {/* Global loading overlay */}
+        {Object.values(loading).some(Boolean) && (
+          <div className="loading-overlay">
+            <LoadingSpinner size={40} />
+          </div>
+        )}
         <h1>🔐 Admin Dashboard</h1>
         <button onClick={onLogout} className="logout-btn">Logout</button>
       </div>
@@ -183,8 +398,6 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
         </button>
       </div>
 
-      {loading && <p className="loading">Loading...</p>}
-
       {activeTab === 'cars' && (
         <div className="admin-section">
           <h2>Car Availability</h2>
@@ -208,9 +421,9 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
                   {cars.map((car) => (
                     <tr key={car.id}>
                       <td>{car.id}</td>
-                      <td>{car.brand || 'N/A'}</td>
+                      <td>{getCarMake(car)}</td>
                       <td>{car.model || 'N/A'}</td>
-                      <td>{car.year || 'N/A'}</td>
+                      <td>{getCarYear(car)}</td>
                       <td>₱{car.price_per_day || 0}</td>
                       <td>
                         <span className={car.is_available ? 'available' : 'unavailable'}>
@@ -221,8 +434,12 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
                         <button
                           onClick={() => handleToggleCarAvailability(car.id, car.is_available)}
                           className="action-btn"
+                          disabled={loading.action === 'toggle' && updatingCar === car.id}
+                          style={{ minWidth: '80px' }}
                         >
-                          Toggle
+                          {loading.action === 'toggle' && updatingCar === car.id ? (
+                            <LoadingSpinner size={16} color="#fff" />
+                          ) : 'Toggle'}
                         </button>
                       </td>
                     </tr>
@@ -259,11 +476,15 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
                       <td>{user.email || 'N/A'}</td>
                       <td>{user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</td>
                       <td>
-                        <button
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="action-btn delete-btn"
+                        <button 
+                          onClick={() => handleDeleteUser(user.id)} 
+                          className="action-btn delete"
+                          disabled={deletingUser === user.id}
+                          style={{ minWidth: '80px' }}
                         >
-                          Delete
+                          {deletingUser === user.id ? (
+                            <LoadingSpinner size={16} color="#fff" />
+                          ) : 'Delete'}
                         </button>
                       </td>
                     </tr>

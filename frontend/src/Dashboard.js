@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
+import Pagination from './components/Pagination';
 
 export default function Dashboard({ apiBase, token, onLogout, user }) {
   const [cars, setCars] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const carsPerPage = 6;
+  
+  // Search and Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('all');
+  const [filterAvailability, setFilterAvailability] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+  
   const [showBookings, setShowBookings] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedCarForBooking, setSelectedCarForBooking] = useState(null);
@@ -244,6 +254,51 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Filter and search logic
+  const getFilteredCars = () => {
+    let filtered = [...cars];
+    
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(car => 
+        (car.make && car.make.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (car.model && car.model.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (car.type && car.type.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+    
+    // Type filter
+    if (filterType !== 'all') {
+      filtered = filtered.filter(car => 
+        car.type && car.type.toLowerCase() === filterType.toLowerCase()
+      );
+    }
+    
+    // Availability filter
+    if (filterAvailability !== 'all') {
+      const isAvailable = filterAvailability === 'available';
+      filtered = filtered.filter(car => 
+        (car.availability === 1 || car.availability === true) === isAvailable
+      );
+    }
+    
+    // Sort
+    filtered.sort((a, b) => {
+      if (sortBy === 'name') {
+        const nameA = `${a.make || ''} ${a.model || ''}`.toLowerCase();
+        const nameB = `${b.make || ''} ${b.model || ''}`.toLowerCase();
+        return nameA.localeCompare(nameB);
+      } else if (sortBy === 'price-low') {
+        return (a.price_per_day || a.price || 0) - (b.price_per_day || b.price || 0);
+      } else if (sortBy === 'price-high') {
+        return (b.price_per_day || b.price || 0) - (a.price_per_day || a.price || 0);
+      }
+      return 0;
+    });
+    
+    return filtered;
+  };
+
   return (
     <div className="dashboard">
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}} />
@@ -252,9 +307,80 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
       <section className="top-rentals">
         <h2>Our Top Rentals</h2>
         <p>Discover our top car rentals, providing comfort, affordability, and convenience to make your next journey smooth and enjoyable!</p>
+        
+        {/* Search and Filter Bar */}
+        <div className="search-filter-bar">
+          <div className="search-box">
+            <input 
+              type="text"
+              placeholder="Search cars..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="search-input"
+            />
+            <span className="search-icon">🔍</span>
+          </div>
+          
+          <div className="filter-group">
+            <select 
+              value={filterType}
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="filter-select"
+            >
+              <option value="all">All Types</option>
+              <option value="sedan">Sedan</option>
+              <option value="suv">SUV</option>
+              <option value="sports">Sports</option>
+              <option value="muscle">Muscle</option>
+              <option value="compact">Compact</option>
+              <option value="mpv">MPV</option>
+              <option value="pickup">Pickup</option>
+            </select>
+            
+            <select 
+              value={filterAvailability}
+              onChange={(e) => {
+                setFilterAvailability(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="filter-select"
+            >
+              <option value="all">All Status</option>
+              <option value="available">Available</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+            
+            <select 
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="filter-select"
+            >
+              <option value="name">Sort by Name</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+            </select>
+          </div>
+        </div>
+        
         <div className="rentals-grid">
-          {cars.length > 0 ? (
-            cars.map((car) => (
+          {(() => {
+            const filteredCars = getFilteredCars();
+            
+            if (filteredCars.length === 0) {
+              return <p style={{textAlign:'center',width:'100%',padding:'40px 0'}}>No cars found matching your criteria</p>;
+            }
+            
+            const indexOfLastCar = currentPage * carsPerPage;
+            const indexOfFirstCar = indexOfLastCar - carsPerPage;
+            const currentCars = filteredCars.slice(indexOfFirstCar, indexOfLastCar);
+            
+            return currentCars.map((car) => (
               <div key={car.id || car._id} className="rental-card">
                 <div className="rental-image-wrapper">
                   <img src={getCarImage(car)} alt={car.model || 'car'} className="rental-image" />
@@ -274,11 +400,21 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
                   </button>
                 </div>
               </div>
-            ))
-          ) : (
-            <p style={{textAlign:'center',width:'100%'}}>No cars available</p>
-          )}
+            ));
+          })()}
         </div>
+        
+        {/* Pagination */}
+        {(() => {
+          const filteredCars = getFilteredCars();
+          return filteredCars.length > carsPerPage && (
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredCars.length / carsPerPage)}
+              onPageChange={setCurrentPage}
+            />
+          );
+        })()}
       </section>
 
       

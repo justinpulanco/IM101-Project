@@ -5,9 +5,11 @@ import AdminDashboard from './AdminDashboard';
 import HomePage from './pages/HomePage';
 import AuthPage from './pages/AuthPage';
 import AdminLoginPage from './pages/AdminLoginPage';
+import LandingNavbar from './components/LandingNavbar';
+import MainNavbar from './components/MainNavbar';
 import useApi from './hooks/useApi';
 import { authService, carService, bookingService } from './services/apiService';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 // AboutPage is rendered inside HomePage now
 
@@ -585,192 +587,25 @@ function App() {
 
   return (
     <div className="App">
-      {/* Navbar */}
-      <nav className={`navbar ${isAuthenticated ? 'navbar-auth' : ''}`}>
-        <div className="navbar-top">
-          <div className="navbar-logo">Car2Go</div>
-          {!isAuthenticated && (
-            <div className={`navbar-links ${isAuthenticated ? 'is-hidden' : ''}`}>
-              <a
-                href="#home"
-                onClick={(e) => {
-                  e.preventDefault();
-                  alert('Please log in to access this page');
-                  setActiveTab('login');
-                  setShowForms(true);
-                }}
-              >
-                Home
-              </a>
-              <a 
-                href="#reviews"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                Reviews
-              </a>
-              
-              <a 
-                href="#about"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const el = document.getElementById('about');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                About
-              </a>
-            </div>
-          )}
-
-          {/* Cars link removed (functionality still available via other UI) */}
-
-          <div className="navbar-right">
-            <button
-              className="navbar-icon search-icon"
-              onClick={() => setShowNavbarSearch(s => !s)}
-              aria-label="Open search"
-              aria-expanded={showNavbarSearch}
-              title="Search"
-            >
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="2" />
-              </svg>
-            </button>
-            {isAuthenticated && !isAdminMode && (
-              <>
-              </>
-            )}
-            {isAuthenticated && !isAdminMode && (
-              <button
-                title="Your bookings"
-                aria-label="Your bookings"
-                onClick={async () => {
-                  // toggle popover and load bookings when opening
-                  const next = !showBookingsPopover;
-                  setShowBookingsPopover(next);
-                  if (next) {
-                    try {
-                      const uid = user?.id || user?.user_id || user?._id;
-                      if (!uid) { setUserBookings([]); return; }
-                      const res = await fetch(`${API}/bookings/user/${uid}`);
-                      const data = await res.json();
-                      setUserBookings(Array.isArray(data) ? data : []);
-                    } catch (err) {
-                      console.error('load user bookings', err);
-                      setUserBookings([]);
-                    }
-                  }
-                }}
-                className="navbar-bookings-btn navbar-icon"
-              >
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M16 3v4M8 3v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-            )}
-
-            <div className={`navbar-icons ${isAuthenticated ? 'is-hidden' : ''}`}>
-              <button className="navbar-icon user-icon" onClick={() => setShowForms(true)} aria-label="Account"> 
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <circle cx="12" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M4 20c1.5-4 6-6 8-6s6.5 2 8 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-              <button className="navbar-icon admin-icon" onClick={() => setIsAdminMode(!isAdminMode)} title="Admin Login" aria-label="Admin"> 
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.28 16.9l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82L4.21 2.28A2 2 0 0 1 7.04.45l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V0a2 2 0 0 1 4 0v.09c.1.7.6 1.27 1.3 1.51h.06a1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 0 1 21.72 7.1l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.21.36.33.78.33 1.2s-.12.84-.33 1.2v.06z" stroke="currentColor" strokeWidth="0.6" />
-                </svg>
-              </button>
-            </div>
-
-            {showNavbarSearch && (
-              <div ref={navbarSearchRef} className="navbar-search-popover" onClick={(e) => e.stopPropagation()}>
-                <form
-                  className="navbar-search-form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setShowNavbarSearch(false);
-                    handleSearch(e);
-                  }}
-                >
-                  <input type="text" placeholder="Location or model" />
-                  <div className="navbar-search-dates">
-                    <input type="date" placeholder="Start" />
-                    <input type="date" placeholder="Return" />
-                  </div>
-                  <div className="navbar-search-actions">
-                    <button type="submit" className="btn primary">Search</button>
-                    <button type="button" className="btn" onClick={() => { setShowNavbarSearch(false); loadAllCars(); }}>View All Cars</button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {isAuthenticated && (
-              <button className="navbar-logout icon-pill" onClick={handleLogout} aria-label="Logout" title="Logout">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M16 17l5-5-5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M21 12H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M13 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
-        {/* Bookings popover anchored to navbar (simple absolute popover) */}
-        {showBookingsPopover && (
-        <div className="bookings-popover">
-          <div className="bookings-popover-head">
-            <strong>Your Bookings</strong>
-            <button className="bookings-popover-close" onClick={() => setShowBookingsPopover(false)}>✕</button>
-          </div>
-          {userBookings.length === 0 ? (
-            <div className="bookings-empty">No bookings found.</div>
-          ) : (
-            userBookings.map((b) => (
-              <div key={b.id} className="bookings-item">
-                <div className="bookings-id">ID: {b.id}</div>
-                <div className="bookings-user">{b.user || (user && (user.name || user.email))}</div>
-                <div className="bookings-car">{b.car || b.model || 'Car'}</div>
-                <div className="bookings-dates">{new Date(b.start_date).toISOString()} → {new Date(b.end_date).toISOString()}</div>
-                <div className="bookings-price">{currency.format(b.total_price || b.total || 0)}</div>
-                <div style={{marginTop:8, display:'flex', gap:8}}>
-                  {(b.payment_status || b.status) === 'paid' ? (
-                    <div style={{fontSize:12, color:'#777'}}>Transacted</div>
-                  ) : (
-                    <button className="bookings-delete-btn" onClick={async () => {
-                      const msg = window.confirm('Cancel this booking?');
-                      if (!msg) return;
-                      try {
-                        const res = await fetch(`${API}/bookings/${b.id}`, { method: 'DELETE', headers: { 'Content-Type':'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
-                        const data = await res.json();
-                        if (res.ok) {
-                          // remove locally
-                          setUserBookings((prev) => prev.filter((x) => x.id !== b.id));
-                          alert(data.message || 'Booking canceled');
-                        } else {
-                          alert(data.message || 'Cancellation failed');
-                        }
-                      } catch (err) {
-                        console.error('delete booking', err);
-                        alert('Cancellation failed');
-                      }
-                    }}>Cancel this Booking</button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+      {/* Conditional Navbar Rendering */}
+      {!isAuthenticated && !isAdminMode ? (
+        <LandingNavbar 
+          onShowForms={setShowForms}
+          onShowAdminLogin={() => setIsAdminMode(true)}
+          setActiveTab={setActiveTab}
+        />
+      ) : isAuthenticated && !isAdminMode ? (
+        <MainNavbar 
+          user={user}
+          token={token}
+          showBookingsPopover={showBookingsPopover}
+          setShowBookingsPopover={setShowBookingsPopover}
+          userBookings={userBookings}
+          setUserBookings={setUserBookings}
+          onLogout={handleLogout}
+          currency={currency}
+        />
+      ) : null}
 
       {/* Main content branches */}
       {isAdminMode && !adminToken ? (
