@@ -1064,6 +1064,43 @@ input[type="number"].card-input::-webkit-inner-spin-button {
   background: rgba(30,144,255,0.12);
 }
 
+/* Stronger visibility for payment inputs while typing */
+.payment-method-details .card-input,
+.payment-card-details .card-input,
+.modal-content.booking-modal-dashboard .card-input {
+  font-size: 12px;
+  font-weight: 700;
+  color: #000000;
+  caret-color: #0b3d91;
+  letter-spacing: 0.6px;
+  padding: 5px 5px;
+}
+
+/* Larger numeric font for card and account numbers to improve readability */
+.payment-card-details .card-input[inputmode="numeric"],
+.payment-method-details .card-input[inputmode="numeric"],
+.payment-method-details input[type="text"],
+.payment-method-details input[type="number"] {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Segoe UI Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+/* Stronger focus ring with blue accent for typed content visibility */
+.payment-method-details .card-input:focus,
+.payment-card-details .card-input:focus {
+  border-color: #0b3d91;
+  box-shadow: 0 12px 36px rgba(11,61,145,0.12);
+}
+
+/* Improve contrast of labels inside payment blocks */
+.payment-method-details label,
+.payment-card-details label {
+  color: #0b2236;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
 .booking-modal h3 {
   font-size: 24px;
   margin-bottom: 20px;

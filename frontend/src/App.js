@@ -747,7 +747,7 @@ function App() {
                     <div style={{fontSize:12, color:'#777'}}>Transacted</div>
                   ) : (
                     <button className="bookings-delete-btn" onClick={async () => {
-                      const msg = window.confirm('Delete this booking?');
+                      const msg = window.confirm('Cancel this booking?');
                       if (!msg) return;
                       try {
                         const res = await fetch(`${API}/bookings/${b.id}`, { method: 'DELETE', headers: { 'Content-Type':'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
@@ -755,15 +755,15 @@ function App() {
                         if (res.ok) {
                           // remove locally
                           setUserBookings((prev) => prev.filter((x) => x.id !== b.id));
-                          alert(data.message || 'Booking deleted');
+                          alert(data.message || 'Booking canceled');
                         } else {
-                          alert(data.message || 'Delete failed');
+                          alert(data.message || 'Cancellation failed');
                         }
                       } catch (err) {
                         console.error('delete booking', err);
-                        alert('Delete failed');
+                        alert('Cancellation failed');
                       }
-                    }}>Delete</button>
+                    }}>Cancel this Booking</button>
                   )}
                 </div>
               </div>

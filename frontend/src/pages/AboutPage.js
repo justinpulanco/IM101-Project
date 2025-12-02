@@ -110,7 +110,7 @@ function AboutPage() {
             <div className="contact-item">
               <div className="contact-icon">📍</div>
               <h4>Location</h4>
-              <p>Manila, Philippines</p>
+              <p>Davao City, Philippines</p>
             </div>
             <div className="contact-item">
               <div className="contact-icon">📞</div>
