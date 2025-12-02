@@ -45,73 +45,67 @@ function AboutPage() {
         </div>
       </div>
 
-      <div className="about-features">
+      <div className="what-we-offer">
         <div className="about-container">
           <h2>What We Offer</h2>
-          <div className="features-grid">
-            <div className="feature-item">
-              <div className="feature-number">01</div>
-              <h4>Wide Vehicle Selection</h4>
+          <div className="card-container">
+            <div className="card">
+              <div className="number">1</div>
+              <h3>Wide Vehicle Selection</h3>
               <p>From economical daily drivers to premium sports cars, we have the perfect vehicle for every need and budget.</p>
             </div>
 
-            <div className="feature-item">
-              <div className="feature-number">02</div>
-              <h4>Competitive Pricing</h4>
+            <div className="card">
+              <div className="number">2</div>
+              <h3>Competitive Pricing</h3>
               <p>Transparent pricing with no hidden fees. Get the best value for your rental with our flexible daily rates.</p>
             </div>
 
-            <div className="feature-item">
-              <div className="feature-number">03</div>
-              <h4>Easy Booking</h4>
+            <div className="card">
+              <div className="number">3</div>
+              <h3>Easy Booking</h3>
               <p>Book your car in minutes through our user-friendly online platform. No complicated procedures, just simple and fast.</p>
             </div>
 
-            <div className="feature-item">
-              <div className="feature-number">04</div>
-              <h4>Professional Service</h4>
+            <div className="card">
+              <div className="number">4</div>
+              <h3>Professional Service</h3>
               <p>Our dedicated team is available to assist you with any questions or special requests for your rental.</p>
             </div>
 
-            <div className="feature-item">
-              <div className="feature-number">05</div>
-              <h4>Vehicle Maintenance</h4>
+            <div className="card">
+              <div className="number">5</div>
+              <h3>Vehicle Maintenance</h3>
               <p>Every car is thoroughly inspected and maintained to the highest standards for your safety and peace of mind.</p>
             </div>
 
-            <div className="feature-item">
-              <div className="feature-number">06</div>
-              <h4>Flexible Terms</h4>
+            <div className="card">
+              <div className="number">6</div>
+              <h3>Flexible Terms</h3>
               <p>Flexible rental periods, convenient pickup and drop-off options to suit your schedule.</p>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="about-stats">
-        <div className="about-container">
-          <div className="stat-box">
-            <div className="stat-number">16+</div>
-            <div className="stat-label">Vehicles</div>
+          <div className="stats-section">
+            <div className="stat-box">
+              <div className="stat-number">16+</div>
+              <div className="stat-label">Vehicles</div>
+            </div>
+            <div className="stat-box">
+              <div className="stat-number">1000+</div>
+              <div className="stat-label">Happy Customers</div>
+            </div>
+            <div className="stat-box">
+              <div className="stat-number">5★</div>
+              <div className="stat-label">Customer Rating</div>
+            </div>
+            <div className="stat-box">
+              <div className="stat-number">24/7</div>
+              <div className="stat-label">Support</div>
+            </div>
           </div>
-          <div className="stat-box">
-            <div className="stat-number">1000+</div>
-            <div className="stat-label">Happy Customers</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-number">5★</div>
-            <div className="stat-label">Customer Rating</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-number">24/7</div>
-            <div className="stat-label">Support</div>
-          </div>
-        </div>
-      </div>
 
-      <div className="about-contact">
-        <div className="about-container">
-          <h2>Get In Touch</h2>
+          <h2 className="contact-heading">Get In Touch</h2>
           <div className="contact-grid">
             <div className="contact-item">
               <div className="contact-icon">📍</div>

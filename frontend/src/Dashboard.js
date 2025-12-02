@@ -10,6 +10,15 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
   const [bookingStart, setBookingStart] = useState('');
   const [bookingEnd, setBookingEnd] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [gcashNumber, setGcashNumber] = useState('');
+  const [paypalEmail, setPaypalEmail] = useState('');
+  const [bankNameField, setBankNameField] = useState('');
+  const [bankAccountName, setBankAccountName] = useState('');
+  const [bankAccountNumber, setBankAccountNumber] = useState('');
   const [totalPrice, setTotalPrice] = useState(0);
   const [showTransactionReceipt, setShowTransactionReceipt] = useState(false);
   const [lastTransaction, setLastTransaction] = useState(null);
@@ -56,6 +65,36 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
       return;
     }
 
+    // If paying by card, require basic card info
+    if (paymentMethod === 'credit_card') {
+      if (!cardNumber || cardNumber.trim().length < 12) {
+        alert('Please enter a valid card number');
+        return;
+      }
+    }
+
+    // Additional validations for other payment methods
+    if (paymentMethod === 'gcash') {
+      if (!gcashNumber || gcashNumber.replace(/[^0-9]/g, '').length < 7) {
+        alert('Please enter a valid GCash number');
+        return;
+      }
+    }
+
+    if (paymentMethod === 'paypal') {
+      if (!paypalEmail || !paypalEmail.includes('@')) {
+        alert('Please enter a valid PayPal email');
+        return;
+      }
+    }
+
+    if (paymentMethod === 'bank_transfer') {
+      if (!bankNameField || !bankAccountNumber || bankAccountNumber.replace(/[^0-9]/g, '').length < 6) {
+        alert('Please enter valid bank transfer details');
+        return;
+      }
+    }
+
     if (new Date(bookingStart) >= new Date(bookingEnd)) {
       alert('End date must be after start date');
       return;
@@ -74,7 +113,12 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
           start_date: bookingStart,
           end_date: bookingEnd,
           total_price: totalPrice,
-          payment_method: paymentMethod
+          payment_method: paymentMethod,
+          // include minimal payment info for server/display only; do not send sensitive data in production
+          ...(paymentMethod === 'credit_card' && { card_info: { number: cardNumber, name: cardName, expiry: cardExpiry } }),
+          ...(paymentMethod === 'gcash' && { gcash: { number: gcashNumber } }),
+          ...(paymentMethod === 'paypal' && { paypal: { email: paypalEmail } }),
+          ...(paymentMethod === 'bank_transfer' && { bank_transfer: { bank: bankNameField, account_name: bankAccountName, account_number: bankAccountNumber } })
         })
       });
 
@@ -82,6 +126,22 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
       if (res.ok) {
         // Store transaction details
         const days = Math.ceil((new Date(bookingEnd) - new Date(bookingStart)) / (1000 * 60 * 60 * 24));
+        const mask = (s) => {
+          if (!s) return undefined;
+          const digits = String(s).replace(/[^0-9]/g, '');
+          if (digits.length <= 4) return digits;
+          return '**** **** **** ' + digits.slice(-4);
+        };
+
+        const paymentDetails = paymentMethod === 'credit_card'
+          ? `Card: ${mask(cardNumber)}`
+          : paymentMethod === 'gcash'
+            ? `GCash: ${mask(gcashNumber)}`
+            : paymentMethod === 'paypal'
+              ? `PayPal: ${paypalEmail}`
+              : paymentMethod === 'bank_transfer'
+                ? `Bank: ${bankNameField} (${bankAccountName})` : undefined;
+
         setLastTransaction({
           bookingId: data.bookingId,
           userName: user?.name || 'Guest',
@@ -89,12 +149,14 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
           carMake: selectedCarForBooking.make,
           carModel: selectedCarForBooking.model,
           carType: selectedCarForBooking.type,
+          carImage: getCarImage(selectedCarForBooking),
           startDate: new Date(bookingStart).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
           endDate: new Date(bookingEnd).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
           days: days,
           dailyRate: selectedCarForBooking.price_per_day || selectedCarForBooking.price,
           totalPrice: totalPrice,
           paymentMethod: paymentMethod,
+          paymentDetails: paymentDetails,
           timestamp: new Date().toLocaleString()
         });
         
@@ -219,52 +281,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
         </div>
       </section>
 
-      <section style={{marginTop:24}}>
-        {token && (
-          <>
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16}}>
-              <h3 style={{margin:0}}>Your Bookings</h3>
-              <button 
-                onClick={() => setShowBookings(!showBookings)}
-                style={{
-                  padding:'8px 16px',
-                  background: showBookings ? '#27ae60' : '#666',
-                  color:'white',
-                  border:'none',
-                  borderRadius:'6px',
-                  cursor:'pointer',
-                  fontSize:'13px',
-                  fontWeight:'600',
-                  transition:'all 0.2s'
-                }}
-              >
-                {showBookings ? '▼ Hide' : '▶ Show'}
-              </button>
-            </div>
-            {showBookings && (
-              <div className="bookings">
-                {bookings.length > 0 ? (
-                  bookings.map((booking) => (
-                    <div key={booking.id} className="booking-item">
-                      <b>ID:</b> {booking.id}
-                      <br />
-                      <b>User:</b> {booking.user}
-                      <br />
-                      <b>Car:</b> {booking.car}
-                      <br />
-                      <b>{booking.start_date}</b> → <b>{booking.end_date}</b>
-                      <br />
-                      <b>₱{booking.total_price}</b>
-                    </div>
-                  ))
-                ) : (
-                  <p style={{color:'#999', textAlign:'center', padding:'20px'}}>No bookings yet. Book a car to get started!</p>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </section>
+      
 
 
 
@@ -273,7 +290,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
         <div className="modal-overlay visible" onClick={closeBookingModal}>
           <div className="modal-content booking-modal-dashboard" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={closeBookingModal}>✕</button>
-            <h2>Book {selectedCarForBooking.make} {selectedCarForBooking.model}</h2>
+            <h2 className="booking-car-title">Book {selectedCarForBooking.make} {selectedCarForBooking.model}</h2>
             <div className="booking-user">Booking as: {user?.name || user?.email || 'Guest'}</div>
             
             <form onSubmit={handleBooking} className="booking-form-dashboard">
@@ -331,6 +348,56 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
                     />
                     <span>💳 Credit/Debit Card</span>
                   </label>
+                  {/* Card details shown when Credit/Debit selected */}
+                  {paymentMethod === 'credit_card' && (
+                    <div className="payment-card-details">
+                      <div className="card-row">
+                        <label>Card Number</label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={cardNumber}
+                          onChange={(e) => setCardNumber(e.target.value.replace(/[^0-9 ]/g, ''))}
+                          placeholder="1234 5678 9012 3456"
+                          required
+                          className="card-input"
+                        />
+                      </div>
+                      <div className="card-row">
+                        <label>Cardholder Name</label>
+                        <input
+                          type="text"
+                          value={cardName}
+                          onChange={(e) => setCardName(e.target.value)}
+                          placeholder="Name on card"
+                          className="card-input"
+                        />
+                      </div>
+                      <div className="card-row split">
+                        <div>
+                          <label>Expiry</label>
+                          <input
+                            type="text"
+                            value={cardExpiry}
+                            onChange={(e) => setCardExpiry(e.target.value)}
+                            placeholder="MM/YY"
+                            className="card-input"
+                          />
+                        </div>
+                        <div>
+                          <label>CVV</label>
+                          <input
+                            type="password"
+                            value={cardCvv}
+                            onChange={(e) => setCardCvv(e.target.value.replace(/[^0-9]/g, ''))}
+                            placeholder="123"
+                            maxLength={4}
+                            className="card-input"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <label className="payment-option">
                     <input 
                       type="radio" 
@@ -341,6 +408,18 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
                     />
                     <span>📱 GCash</span>
                   </label>
+                  {paymentMethod === 'gcash' && (
+                    <div className="payment-method-details">
+                      <label>GCash Number</label>
+                      <input
+                        type="text"
+                        value={gcashNumber}
+                        onChange={(e) => setGcashNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                        placeholder="09XXXXXXXXX"
+                        className="card-input"
+                      />
+                    </div>
+                  )}
                   <label className="payment-option">
                     <input 
                       type="radio" 
@@ -351,6 +430,18 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
                     />
                     <span>🌐 PayPal</span>
                   </label>
+                  {paymentMethod === 'paypal' && (
+                    <div className="payment-method-details">
+                      <label>PayPal Email</label>
+                      <input
+                        type="email"
+                        value={paypalEmail}
+                        onChange={(e) => setPaypalEmail(e.target.value)}
+                        placeholder="you@paypal.com"
+                        className="card-input"
+                      />
+                    </div>
+                  )}
                   <label className="payment-option">
                     <input 
                       type="radio" 
@@ -361,6 +452,40 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
                     />
                     <span>🏦 Bank Transfer</span>
                   </label>
+                  {paymentMethod === 'bank_transfer' && (
+                    <div className="payment-method-details">
+                      <div className="card-row">
+                        <label>Bank Name</label>
+                        <input
+                          type="text"
+                          value={bankNameField}
+                          onChange={(e) => setBankNameField(e.target.value)}
+                          placeholder="Bank Name"
+                          className="card-input"
+                        />
+                      </div>
+                      <div className="card-row">
+                        <label>Account Name</label>
+                        <input
+                          type="text"
+                          value={bankAccountName}
+                          onChange={(e) => setBankAccountName(e.target.value)}
+                          placeholder="Account Name"
+                          className="card-input"
+                        />
+                      </div>
+                      <div className="card-row">
+                        <label>Account Number</label>
+                        <input
+                          type="text"
+                          value={bankAccountNumber}
+                          onChange={(e) => setBankAccountNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                          placeholder="Account Number"
+                          className="card-input"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -402,6 +527,15 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
               <div className="receipt-check">✓</div>
               <h2>Booking Confirmed!</h2>
               <p className="receipt-subtitle">Your reservation has been successfully created</p>
+
+              {/* Vehicle preview inside receipt */}
+              <div className="receipt-vehicle">
+                <img src={lastTransaction.carImage} alt={`${lastTransaction.carMake} ${lastTransaction.carModel}`} />
+                <div className="receipt-vehicle-info">
+                  <div className="receipt-vehicle-name">{lastTransaction.carMake} {lastTransaction.carModel}</div>
+                  <div className="receipt-vehicle-type">{lastTransaction.carType}</div>
+                </div>
+              </div>
             </div>
 
             {/* Transaction Details */}
@@ -485,6 +619,12 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
                 <span className="receipt-label">Transaction Time:</span>
                 <span className="receipt-value">{lastTransaction.timestamp}</span>
               </div>
+              {lastTransaction.paymentDetails && (
+                <div className="receipt-item">
+                  <span className="receipt-label">Payment Details:</span>
+                  <span className="receipt-value">{lastTransaction.paymentDetails}</span>
+                </div>
+              )}
             </div>
 
             {/* Action Button */}

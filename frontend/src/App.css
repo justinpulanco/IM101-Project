@@ -839,6 +839,231 @@ button:not(:disabled) {
   position: relative;
 }
 
+/* Booking modal specific title styling (activated when opening via "Rent this car") */
+.modal-content.booking-modal-dashboard .booking-car-title {
+  color: #1e90ff; /* default highlight color: DodgerBlue */
+  font-size: 28px;
+  margin: 0 0 10px 0;
+  line-height: 1.05;
+  transition: color 160ms ease;
+}
+.modal-content.booking-modal-dashboard .booking-car-title.red {
+  color: var(--brand-red);
+}
+.modal-content.booking-modal-dashboard .booking-car-title.black {
+  color: #000000;
+}
+
+/* ---------------------------------------------------------------------
+   Transaction receipt - polished theme
+   --------------------------------------------------------------------- */
+.modal-content.transaction-receipt {
+  max-width: 640px;
+  width: 92%;
+  padding: 28px 28px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  color: #0b0b0b;
+  box-shadow: 0 40px 90px rgba(6,10,20,0.28);
+  border: 1px solid rgba(8,15,25,0.04);
+}
+
+.modal-content.transaction-receipt .modal-close {
+  background: #f6f7f9;
+  color: rgba(10,10,10,0.7);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(6,10,20,0.06);
+}
+
+.receipt-header {
+  text-align: center;
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(10,10,10,0.04);
+}
+.receipt-check {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 30% 30%, #5eead4 0%, #10b981 40%, #059669 100%);
+  color: #fff;
+  font-weight: 900;
+  font-size: 20px;
+  box-shadow: 0 8px 30px rgba(5,150,105,0.18), inset 0 -6px 12px rgba(0,0,0,0.06);
+  margin-bottom: 10px;
+}
+.receipt-header h2 {
+  margin: 8px 0 6px 0;
+  font-size: 22px;
+  color: #0b3d91; /* deep blue */
+  font-weight: 800;
+}
+.receipt-subtitle {
+  margin: 0 auto 14px auto;
+  color: #344054;
+  font-size: 14px;
+}
+
+.receipt-vehicle {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 12px;
+  background: linear-gradient(180deg, #fff 0%, #fbfbfb 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(10,10,10,0.03);
+  margin: 8px 0 18px 0;
+}
+.receipt-vehicle img {
+  width: 180px;
+  height: auto;
+  border-radius: 10px;
+  object-fit: contain;
+  box-shadow: 0 12px 36px rgba(6,10,20,0.08);
+}
+.receipt-vehicle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.receipt-vehicle-name {
+  font-weight: 800;
+  color: #0b0b0b;
+  font-size: 16px;
+}
+.receipt-vehicle-type {
+  color: #475569;
+  font-size: 13px;
+}
+
+.receipt-section {
+  margin: 12px 0;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid rgba(10,10,10,0.03);
+}
+.receipt-section-title {
+  font-size: 15px;
+  color: #0b3d91;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.receipt-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  align-items: center;
+}
+.receipt-label {
+  color: #334155;
+  font-weight: 700;
+  font-size: 14px;
+}
+.receipt-value {
+  color: #0b0b0b;
+  font-weight: 800;
+  font-size: 14px;
+}
+.receipt-divider {
+  height: 1px;
+  background: rgba(10,10,10,0.04);
+  margin: 12px 0;
+}
+.receipt-total .receipt-value {
+  color: var(--brand-red);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.receipt-close-btn {
+  margin-top: 18px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #0b3d91, #0b61c9);
+  color: #fff;
+  border: none;
+  font-weight: 800;
+  font-size: 15px;
+  box-shadow: 0 12px 36px rgba(11,61,145,0.18);
+}
+
+/* make sure long lists scroll nicely inside modal */
+.modal-content.transaction-receipt { overflow: auto; max-height: 84vh; }
+
+@media (max-width: 640px) {
+  .modal-content.transaction-receipt { padding: 18px; max-width: 94%; }
+  .receipt-vehicle img { width: 140px; }
+  .receipt-header h2 { font-size: 20px; }
+}
+
+/* Payment method extra fields (GCash / PayPal / Bank Transfer) */
+.payment-method-details {
+  margin-top: 10px;
+  background: #fbfbfb;
+  border: 1px solid #eee;
+  padding: 10px;
+  border-radius: 8px;
+}
+.payment-method-details label {
+  display: block;
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.payment-method-details .card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.card-input {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d0d0d0;
+  font-size: 15px;
+  width: 100%;
+  background: #ffffff;
+  color: #0b0b0b;
+  box-shadow: 0 6px 18px rgba(12,12,12,0.06);
+  transition: box-shadow 120ms ease, transform 120ms ease, border-color 120ms ease;
+}
+.card-input:focus {
+  outline: none;
+  border-color: var(--brand-red);
+  box-shadow: 0 10px 30px rgba(12,12,12,0.08);
+  transform: translateY(-1px);
+}
+
+.card-input::placeholder {
+  color: #9aa0a6;
+  opacity: 1;
+}
+
+/* Make numeric inputs look consistent and clearly readable */
+input[type="number"].card-input,
+input[type="text"].card-input {
+  -moz-appearance: textfield;
+}
+
+/* hide default spinner on number inputs */
+input[type="number"].card-input::-webkit-outer-spin-button,
+input[type="number"].card-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Selection inside inputs */
+.card-input::selection {
+  background: rgba(30,144,255,0.12);
+}
+
 .booking-modal h3 {
   font-size: 24px;
   margin-bottom: 20px;
@@ -3477,9 +3702,10 @@ button:not(:disabled) {
 
 .receipt-subtitle {
   font-size: 15px;
-  opacity: 0.9;
+  opacity: 0.95;
   margin: 0;
-  font-weight: 400;
+  font-weight: 700;
+  color: #000000;
 }
 
 .receipt-section {
@@ -3492,14 +3718,14 @@ button:not(:disabled) {
 }
 
 .receipt-section-title {
-  color: #2c3e50;
+  color: #000000;
   font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 15px;
+  font-weight: 800;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
 .receipt-section-title::after {
@@ -3522,15 +3748,15 @@ button:not(:disabled) {
 }
 
 .receipt-label {
-  color: #7f8c8d;
-  font-weight: 500;
+  color: #000000;
+  font-weight: 700;
   flex-shrink: 0;
   width: 120px;
 }
 
 .receipt-value {
-  color: #2c3e50;
-  font-weight: 500;
+  color: #000000;
+  font-weight: 700;
   text-align: right;
   flex: 1;
   padding-left: 15px;
@@ -3804,105 +4030,71 @@ button:not(:disabled) {
   background: #d8d8d8;
 }
 
-/* Transaction Receipt Styling - Premium Dark Theme */
+/* Transaction Receipt Styling - Clean (black text for visibility) */
 .modal-content.transaction-receipt {
-  max-width: 500px !important;
+  max-width: 520px !important;
   max-height: 90vh !important;
   overflow-y: auto !important;
   padding: 0 !important;
   border-radius: 12px !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
-  background: #1e1e1e !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+  background: #ffffff !important;
+  color: #111 !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
 }
 
 .modal-content.transaction-receipt .receipt-header {
   text-align: center;
-  padding: 30px 25px !important;
-  background: linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%) !important;
-  color: white !important;
+  padding: 20px 20px !important;
+  background: #ffffff !important;
+  color: #111 !important;
   position: relative;
   border-radius: 12px 12px 0 0 !important;
   overflow: hidden;
 }
 
-.modal-content.transaction-receipt .receipt-header::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 70%);
-  pointer-events: none;
-}
-
 .modal-content.transaction-receipt .receipt-check {
-  width: 70px !important;
-  height: 70px !important;
-  background: rgba(46, 213, 115, 0.2) !important;
+  width: 56px !important;
+  height: 56px !important;
+  background: rgba(0,0,0,0.04) !important;
   border-radius: 50% !important;
-  margin: 0 auto 20px !important;
+  margin: 0 auto 12px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 32px !important;
-  color: #2ed573 !important;
-  border: 2px solid #2ed573 !important;
-  box-shadow: 0 0 0 8px rgba(46, 213, 115, 0.1) !important;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 15px rgba(46, 213, 115, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(46, 213, 115, 0);
-  }
+  font-size: 28px !important;
+  color: var(--brand-green) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
 }
 
 .modal-content.transaction-receipt .receipt-header h2 {
-  font-size: 24px !important;
-  font-weight: 700 !important;
-  color: #ffffff !important;
-  margin: 0 0 8px 0 !important;
-  letter-spacing: 0.5px;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #000000 !important; /* Black for maximum visibility */
+  margin: 6px 0 6px 0 !important;
 }
 
 .modal-content.transaction-receipt .receipt-subtitle {
-  font-size: 14px !important;
-  color: #b0b6b8 !important;
-  margin: 0 !important;
-  font-weight: 400 !important;
+  font-size: 13px !important;
+  color: #000000 !important;
+  margin: 0 0 8px 0 !important;
+  font-weight: 800 !important;
 }
 
 .modal-content.transaction-receipt .receipt-section {
   margin: 0 !important;
-  padding: 20px 30px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-  background: #1e1e1e !important;
-}
-
-.modal-content.transaction-receipt .receipt-section:last-of-type {
-  border-bottom: none !important;
+  padding: 16px 20px !important;
+  border-bottom: 1px solid rgba(0,0,0,0.04) !important;
+  background: #ffffff !important;
 }
 
 .modal-content.transaction-receipt .receipt-section-title {
   font-size: 12px !important;
-  font-weight: 600 !important;
+  font-weight: 800 !important;
   text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-  color: #7f8c8d !important;
-  margin: 0 0 15px 0 !important;
-  padding-bottom: 8px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-  display: flex;
-  align-items: center;
+  letter-spacing: 0.8px !important;
+  color: #000000 !important; /* Black for visibility */
+  margin: 0 0 10px 0 !important;
 }
 
 .modal-content.transaction-receipt .receipt-item {
@@ -3914,60 +4106,156 @@ button:not(:disabled) {
 }
 
 .modal-content.transaction-receipt .receipt-label {
-  color: #b0b6b8 !important;
-  font-weight: 400 !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
   font-size: 13px !important;
 }
 
 .modal-content.transaction-receipt .receipt-value {
-  color: #ffffff !important;
-  font-weight: 500 !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
   text-align: right !important;
   font-size: 14px !important;
 }
 
 .modal-content.transaction-receipt .receipt-total {
-  background: rgba(46, 213, 115, 0.1) !important;
-  padding: 15px 20px !important;
-  margin: 20px 0 0 0 !important;
+  background: rgba(46, 213, 115, 0.08) !important;
+  padding: 14px 18px !important;
+  margin: 14px 0 0 0 !important;
   border-radius: 8px !important;
   border-left: 3px solid #2ed573 !important;
 }
 
 .modal-content.transaction-receipt .receipt-total .receipt-label {
   font-size: 14px !important;
-  font-weight: 600 !important;
-  color: #2ed573 !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
 }
 
 .modal-content.transaction-receipt .receipt-total .receipt-value {
-  color: #2ed573 !important;
-  font-size: 20px !important;
-  font-weight: 700 !important;
+  color: #000000 !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
 }
 
 .modal-content.transaction-receipt .receipt-close-btn {
   width: calc(100% - 40px) !important;
-  padding: 14px 20px !important;
-  margin: 30px 20px 25px 20px !important;
+  padding: 12px 18px !important;
+  margin: 18px 20px 20px 20px !important;
   background: #2ed573 !important;
   color: white !important;
   border: none !important;
   border-radius: 8px !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
   cursor: pointer !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  transition: all 0.18s ease !important;
 }
 
 .modal-content.transaction-receipt .receipt-close-btn:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(46, 213, 115, 0.4) !important;
   background: #25b562 !important;
 }
+
+/* Vehicle preview inside receipt */
+.modal-content.transaction-receipt .receipt-vehicle {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 12px 20px !important;
+  background: #fafafa !important;
+  border-bottom: 1px solid rgba(0,0,0,0.03) !important;
+}
+.modal-content.transaction-receipt .receipt-vehicle img {
+  width: 96px !important;
+  height: 56px !important;
+  object-fit: contain !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  background: #fff !important;
+  padding: 6px !important;
+}
+.modal-content.transaction-receipt .receipt-vehicle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+.modal-content.transaction-receipt .receipt-vehicle-name {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+}
+.modal-content.transaction-receipt .receipt-vehicle-type {
+  font-size: 13px !important;
+  color: #333333 !important;
+}
+
+/* Strong overrides to ensure receipt text is visible on the actual page */
+.modal-content.transaction-receipt,
+.modal-content.transaction-receipt * {
+  -webkit-text-fill-color: #000000 !important;
+  color: #000000 !important;
+  background: transparent !important;
+}
+
+/* Make headings, labels and values explicitly black and bold */
+.modal-content.transaction-receipt .receipt-header h2,
+.modal-content.transaction-receipt .receipt-subtitle,
+.modal-content.transaction-receipt .receipt-section-title,
+.modal-content.transaction-receipt .receipt-label,
+.modal-content.transaction-receipt .receipt-value,
+.modal-content.transaction-receipt .receipt-vehicle-name,
+.modal-content.transaction-receipt .receipt-vehicle-type {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  background: transparent !important;
+}
+
+/* Avoid blue selection highlight inside the receipt modal which made text look blocked */
+.modal-content.transaction-receipt ::selection {
+  background: rgba(0,0,0,0.04) !important;
+  color: #000000 !important;
+}
+.modal-content.transaction-receipt ::-moz-selection {
+  background: rgba(0,0,0,0.04) !important;
+  color: #000000 !important;
+}
+
+/* Payment card detail styles inside booking modal */
+.payment-card-details {
+  margin-top: 10px;
+  background: linear-gradient(180deg, #fff, #fafafa);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.payment-card-details .card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.payment-card-details .card-row.split {
+  display: flex;
+  gap: 10px;
+}
+.payment-card-details label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #222;
+}
+.card-input {
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+}
+.card-input::placeholder { color: #aaa; }
+
+.payment-card-details .card-row.split > div { flex: 1; }
 
 .capitalize { 
   text-transform: capitalize;

@@ -16,10 +16,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 2rem;
-  padding: 2rem;
-  max-width: 1400px;
+  padding: 1.4rem 1.6rem;
+  max-width: 1100px;
   margin: 0 auto;
-  width: 100%;
+  width: 95%;
+  justify-items: center;
 }
 
 /* Responsive Breakpoints */
@@ -44,37 +45,116 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   color: #e5e7eb;
   font-family: 'Inter', sans-serif;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .about-hero {
   width: 100%;
   text-align: center;
   padding: 2rem 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .about-hero-content h1 {
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
+  font-size: clamp(1.8rem, 2.5vw, 2.2rem);
+  margin: 0 0 0.5rem 0;
   color: white;
+  text-align: center;
+  font-weight: 600;
 }
 
 .about-hero-content p {
-  font-size: 0.9rem;
+  font-size: clamp(0.9rem, 1.4vw, 1rem);
   color: #d1d5db;
-  margin-bottom: 1.5rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Features grid: responsive columns that auto-fit available space */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  justify-content: center;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .about-card {
   margin-bottom: 1rem;
-  padding: 0.8rem;
-  background: rgba(25, 35, 55, 0.7);
-  border-radius: 8px;
+  padding: 0.9rem;
+  background: linear-gradient(180deg, rgba(18,28,36,0.9), rgba(22,34,46,0.85));
+  border-radius: 12px;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: center;
+  text-align: center;
 }
 
 .about-card h3::before {
   content: "⭐";
   margin-right: 0.5rem;
   color: #fbbf24;
+}
+
+.about-icon {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  background: rgba(255,255,255,0.03);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25) inset;
+}
+
+.about-card .about-content {
+  flex: 1 1 auto;
+}
+
+.about-card h3 {
+  font-size: clamp(1.12rem, 1.9vw, 1.75rem);
+  margin: 0 0 0.5rem 0;
+}
+
+.about-card p {
+  margin: 0;
+  color: #d7dde3;
+  line-height: 1.6;
+}
+
+/* Stack cards vertically on small screens */
+@media (max-width: 768px) {
+  .about-card {
+    flex-direction: column;
+    min-height: auto;
+  }
+  .about-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+}
+.about-card h3 {
+  font-size: clamp(1.05rem, 1.8vw, 1.6rem);
+  margin: 0 0 0.5rem 0;
+}
+
+.about-card p {
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.45;
+  margin: 0;
 }
 
 /* Center Section */
@@ -88,20 +168,89 @@
 .features-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: 0.9rem;
 }
 
 .feature-item {
-  padding: 1rem;
-  background: rgba(25, 35, 55, 0.7);
+  position: relative;
+  padding: 0.6rem 0.8rem 0.6rem 1.2rem; /* tighter padding, keep space for left stripe */
+  background: linear-gradient(180deg, rgba(12,20,28,0.88), rgba(18,28,36,0.86));
   border-radius: 8px;
-  border-left: 3px solid #fbbf24;
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.9rem;
 }
 
 .feature-number {
-  font-weight: bold;
-  color: #fbbf24;
-  margin-bottom: 0.5rem;
+  font-weight: 800;
+  background: #fbbf24;
+  color: #071726;
+  width: 38px;
+  height: 38px;
+  min-width: 44px;
+  min-width: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%; /* make circular */
+  font-size: 1rem;
+}
+
+.feature-item::before {
+  /* thin yellow stripe on left edge */
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: #fbbf24;
+  border-radius: 3px;
+}
+
+.feature-item .feature-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-item h4 {
+  font-size: clamp(1.02rem, 1.8vw, 1.18rem);
+  margin: 0 0 0.35rem 0;
+}
+
+.feature-item p {
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  margin: 0;
+  color: #d7dde3;
+  line-height: 1.5;
+}
+
+/* Force text centering for About section elements */
+.about-card .about-content,
+.about-card h3,
+.about-card p,
+.features-grid .feature-item h4,
+.features-grid .feature-item p,
+.about-stats .stat-box .stat-number,
+.about-stats .stat-box .stat-label,
+.about-contact .contact-item h4,
+.about-contact .contact-item p {
+  text-align: center;
+  flex: 0 0 20px;
+}
+
+/* Ensure feature layout stacks nicely on narrow screens */
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  .feature-item {
+    flex-direction: row;
+  }
 }
 
 /* Stats Section */
@@ -114,54 +263,292 @@
 .stat-box {
   text-align: center;
   padding: 1rem;
-  background: rgba(25, 35, 55, 0.8);
-  border-radius: 6px;
-  font-weight: bold;
+  background: rgba(25, 35, 55, 0.9);
+  border-radius: 8px;
+  font-weight: 700;
   color: #fbbf24;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .stat-number {
-  font-size: 1.5rem;
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
   margin-bottom: 0.25rem;
 }
 
 .stat-label {
-  font-size: 0.9rem;
+  font-size: clamp(0.9rem, 1.6vw, 1rem);
 }
 
 /* Contact Section */
+.about-contact .about-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
 .about-contact .about-container h2 {
   text-align: center;
   color: white;
   margin-bottom: 1.5rem;
+  font-size: clamp(1.8rem, 2.5vw, 2.2rem);
+  font-weight: 600;
 }
 
 .contact-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  justify-items: center;
+  box-sizing: border-box;
 }
 
 .contact-item {
-  padding: 1rem;
-  background: rgba(25, 35, 55, 0.8);
+  padding: 1.5rem;
+  background: rgba(25, 35, 55, 0.85);
   border-radius: 8px;
   text-align: center;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 240px;
+  box-sizing: border-box;
 }
 
 .contact-icon {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  margin-bottom: 0.75rem;
 }
 
 .contact-item h4 {
   color: #fbbf24;
   margin: 0.5rem 0;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  font-weight: 600;
 }
 
 .contact-item p {
   margin: 0;
   color: #e5e7eb;
+  font-size: clamp(0.9rem, 1.3vw, 1rem);
+  line-height: 1.5;
+}
+
+/* What We Offer Section */
+.what-we-offer {
+  background: linear-gradient(135deg, #3CCF4E 0%, #36454f 50%, #4A0000 100%);
+  padding: 60px 20px;
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.what-we-offer .about-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 95%;
+  box-sizing: border-box;
+}
+
+.what-we-offer h2 {
+  font-size: clamp(1.8rem, 2.5vw, 2.2rem);
+  margin-bottom: 2rem;
+  color: white;
+  text-align: center;
+  font-weight: 600;
+  width: 100%;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  justify-items: center;
+  box-sizing: border-box;
+}
+
+.card {
+  background: rgba(25, 35, 55, 0.9);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+  text-align: center;
+  width: 100%;
+  max-width: 320px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+}
+
+.card .number {
+  width: 50px;
+  height: 50px;
+  background-color: #fbbf24;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  font-size: clamp(1.2rem, 1.8vw, 1.4rem);
+  flex-shrink: 0;
+}
+
+.card h3 {
+  margin: 0 0 0.75rem 0;
+  color: #fbbf24;
+  font-size: clamp(1.1rem, 1.8vw, 1.3rem);
+  text-align: center;
+  font-weight: 600;
+}
+
+.card p {
+  color: #e5e7eb;
+  line-height: 1.6;
+  text-align: center;
+  font-size: clamp(0.9rem, 1.3vw, 1rem);
+  margin: 0;
+}
+
+/* Responsive adjustments for What We Offer section */
+@media (max-width: 768px) {
+  .what-we-offer {
+    padding: 40px 15px;
+  }
+  
+  .what-we-offer h2 {
+    font-size: 2em;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .card {
+    padding: 1.25rem;
+    max-width: 100%;
+    min-height: auto;
+  }
+}
+
+/* Stats Section inside What We Offer */
+.what-we-offer .stats-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.what-we-offer .stat-box {
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(25, 35, 55, 0.9);
+  border-radius: 8px;
+  font-weight: 700;
+  color: #fbbf24;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 200px;
+  box-sizing: border-box;
+}
+
+.what-we-offer .stat-number {
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
+  margin-bottom: 0.25rem;
+}
+
+.what-we-offer .stat-label {
+  font-size: clamp(0.9rem, 1.6vw, 1rem);
+}
+
+/* Contact Heading inside What We Offer */
+.what-we-offer .contact-heading {
+  font-size: clamp(1.8rem, 2.5vw, 2.2rem);
+  margin: 2rem 0 1.5rem 0;
+  color: white;
+  text-align: center;
+  font-weight: 600;
+  width: 100%;
+}
+
+/* Contact Grid inside What We Offer */
+.what-we-offer .contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  justify-items: center;
+  box-sizing: border-box;
+}
+
+.what-we-offer .contact-item {
+  padding: 1.5rem;
+  background: rgba(25, 35, 55, 0.85);
+  border-radius: 8px;
+  text-align: center;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 240px;
+  box-sizing: border-box;
+}
+
+.what-we-offer .contact-item h4 {
+  color: #fbbf24;
+  margin: 0.5rem 0;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  font-weight: 600;
+}
+
+.what-we-offer .contact-item p {
+  margin: 0;
+  color: #e5e7eb;
+  font-size: clamp(0.9rem, 1.3vw, 1rem);
+  line-height: 1.5;
+}
+
+.what-we-offer .contact-icon {
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  margin-bottom: 0.75rem;
 }
 
 /* Color Palette */
@@ -180,6 +567,110 @@
   /* Effects */
   --border-radius: 8px;
   --transition: all 0.3s ease;
+}
+
+/* Landscape / Wide screens: prefer horizontal layouts */
+@media (orientation: landscape) and (min-width: 900px) {
+  .about-page {
+    min-height: auto;
+    align-items: flex-start;
+    padding: 32px 28px;
+  }
+
+  /* Make the main container use more horizontal space and align items to top */
+  .about-container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    align-items: start;
+  }
+
+  /* Features should display as compact boxes (3 across) to match sketch */
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem 1.25rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    justify-items: stretch;
+  }
+
+  /* Make heading align with grid columns */
+  .about-features .about-container h2 {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-left: 0;
+    margin-bottom: 1.2rem;
+  }
+
+  /* Make features boxes consistent height to match sketch */
+  .feature-item {
+    min-height: 170px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* On very wide screens we still let auto-fit lay out columns; override nothing fixed here so layout remains flexible */
+  @media (min-width: 1200px) {
+    .features-grid {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .feature-item {
+      min-height: 170px;
+    }
+
+    /* Contact boxes: flexible grid that centers and wraps */
+    .about-contact .about-container {
+      padding: 0 1rem;
+    }
+
+    .contact-grid {
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      justify-content: center;
+      gap: 1rem;
+      justify-items: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .contact-item {
+      width: 160px;
+      height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  /* Make stats flexible and centered: wrapable row */
+  .about-stats .about-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .stat-box {
+    flex: 0 0 200px;
+    width: 200px;
+    min-height: 110px;
+  }
+
+    /* Mid-wide screens: 2 columns for contact grid */
+    @media (min-width: 900px) and (max-width: 1199px) {
+      .contact-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+  .about-hero {
+    text-align: center;
+    padding: 1rem 0;
+  }
 }
 
 /* Responsive Design */
