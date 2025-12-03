@@ -57,13 +57,13 @@ function HomePage({
                 title="Search"
                 type="button"
               >
-                <span style={{ fontSize: '18px' }}>🔍</span>
+                <span style={{ fontSize: '5px' }}>🔍</span>
               </button>
             </div>
           </div>
           <div className="hero-welcome">
-            <h1>Welcome Back!</h1>
-            <p>Sign in to access your account and book amazing vehicles for your next adventure with Car2Go U-Drive.</p>
+            <h1>Welcome!</h1>
+            <p>Sign in to access your account and start driving your dreams. Book amazing vehicles for unforgettable journeys.</p>
           </div>
         </div>
       </div>

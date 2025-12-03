@@ -4512,3 +4512,1813 @@ gination Styles */
     min-width: 0;
   }
 }
+
+/* Bulk Actions Styles */
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selection-count {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.bulk-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: #2196f3;
+  color: white;
+}
+
+.bulk-btn:hover {
+  background: #1976d2;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+.bulk-btn.delete {
+  background: #f44336;
+}
+
+.bulk-btn.delete:hover {
+  background: #d32f2f;
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+/* Selected Row Highlight */
+.selected-row {
+  background: #e3f2fd !important;
+}
+
+.selected-row:hover {
+  background: #bbdefb !important;
+}
+
+/* Checkbox Styling */
+.admin-table input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--brand-red, #e74c3c);
+}
+
+.admin-table th:first-child,
+.admin-table td:first-child {
+  width: 40px;
+  text-align: center;
+}
+
+/* ========================================
+   COMPREHENSIVE MOBILE RESPONSIVE STYLES
+   ======================================== */
+
+/* Tablet (768px and below) */
+@media (max-width: 768px) {
+  /* Navbar */
+  .navbar-top {
+    padding: 12px 16px;
+  }
+  
+  .navbar-logo {
+    font-size: 20px;
+  }
+  
+  .navbar-links a {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  /* Car Grid */
+  .rentals-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .rental-card {
+    padding: 12px;
+  }
+  
+  .rental-name {
+    font-size: 16px;
+  }
+  
+  .rental-price {
+    font-size: 16px;
+  }
+  
+  /* Dashboard */
+  .dashboard {
+    padding: 16px;
+  }
+  
+  /* Admin Dashboard */
+  .admin-dashboard {
+    padding: 16px;
+  }
+  
+  .admin-tabs {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .admin-tab {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  
+  /* Bulk Actions */
+  .bulk-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .bulk-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  
+  /* Tables */
+  .admin-table {
+    overflow-x: auto;
+  }
+  
+  .admin-table table {
+    font-size: 13px;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 8px;
+  }
+}
+
+/* Mobile (480px and below) */
+@media (max-width: 480px) {
+  /* Navbar */
+  .navbar-top {
+    padding: 10px 12px;
+    flex-wrap: wrap;
+  }
+  
+  .navbar-logo {
+    font-size: 18px;
+  }
+  
+  .navbar-links {
+    display: none; /* Hide on very small screens */
+  }
+  
+  .navbar-right {
+    gap: 8px;
+  }
+  
+  .navbar-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  /* Car Grid - Single Column */
+  .rentals-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .rental-card {
+    max-width: 100%;
+  }
+  
+  /* Search and Filter */
+  .search-filter-bar {
+    gap: 12px;
+  }
+  
+  .search-box {
+    min-width: 100%;
+  }
+  
+  .filter-group {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .filter-select {
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  /* Pagination */
+  .pagination {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  
+  .pagination-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  /* Dashboard */
+  .top-rentals h2 {
+    font-size: 22px;
+  }
+  
+  .top-rentals p {
+    font-size: 14px;
+  }
+  
+  /* Admin Dashboard */
+  .admin-dashboard h1 {
+    font-size: 22px;
+  }
+  
+  .admin-tabs {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .admin-tab {
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* Bulk Actions - Stack Vertically */
+  .bulk-actions {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+  
+  .bulk-btn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .selection-count {
+    text-align: center;
+  }
+  
+  /* Tables - Smaller Text */
+  .admin-table table {
+    font-size: 11px;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 4px;
+  }
+  
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  
+  /* Modals */
+  .modal-content {
+    width: 95%;
+    max-width: 95%;
+    padding: 16px;
+    margin: 10px;
+  }
+  
+  .booking-modal-dashboard {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* Forms */
+  .booking-form-dashboard input,
+  .booking-form-dashboard select {
+    font-size: 14px;
+  }
+  
+  /* Transaction Receipt */
+  .transaction-receipt {
+    padding: 16px;
+  }
+  
+  .receipt-header h2 {
+    font-size: 20px;
+  }
+  
+  .receipt-vehicle img {
+    width: 100px;
+  }
+}
+
+/* Extra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .navbar-logo {
+    font-size: 16px;
+  }
+  
+  .navbar-icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .rental-name {
+    font-size: 14px;
+  }
+  
+  .rental-price {
+    font-size: 14px;
+  }
+  
+  .rental-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .admin-table table {
+    font-size: 10px;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 6px 3px;
+  }
+  
+  .pagination-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .modal-content {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  
+  .booking-modal-dashboard {
+    max-height: 80vh;
+  }
+}
+
+/* Touch Device Improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  .navbar-icon,
+  .rental-btn,
+  .action-btn,
+  .bulk-btn,
+  .pagination-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .rental-card:hover {
+    transform: none;
+  }
+  
+  .pagination-btn:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Mobile Utility Classes */
+.mobile-hidden {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none;
+  }
+  
+  .mobile-hidden {
+    display: block;
+  }
+}
+
+/* Prevent text selection on buttons (better mobile UX) */
+button {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Smooth scrolling for mobile */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="number"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Better scrollbar for mobile */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Mobile-friendly table wrapper */
+@media (max-width: 768px) {
+  .admin-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .admin-table table {
+    min-width: 600px;
+  }
+}
+
+/* ========================================
+   ADDITIONAL RESPONSIVE FIXES
+   ======================================== */
+
+/* Hero Section Mobile Fix */
+@media (max-width: 768px) {
+  .hero-car {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .hero-search {
+    width: 100%;
+    padding: 0 16px;
+  }
+  
+  .search-form {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  
+  .hero-welcome h1 {
+    font-size: 24px;
+  }
+  
+  .hero-welcome p {
+    font-size: 14px;
+  }
+}
+
+/* Cards Grid Responsive */
+@media (max-width: 768px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .card {
+    max-width: 100%;
+  }
+  
+  .card img {
+    height: 160px !important;
+  }
+}
+
+/* Featured Section */
+@media (max-width: 768px) {
+  .featured-section {
+    padding: 24px 12px;
+  }
+  
+  .featured-section h3 {
+    font-size: 20px;
+  }
+}
+
+/* Auth Modal Mobile */
+@media (max-width: 480px) {
+  .auth-modal {
+    width: 95%;
+    max-width: 95%;
+    margin: 10px;
+    padding: 20px;
+  }
+  
+  .modal-tabs {
+    gap: 8px;
+  }
+  
+  .modal-tab {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  
+  .modal-form input {
+    font-size: 16px;
+    padding: 12px;
+  }
+  
+  .modal-form button {
+    font-size: 16px;
+    padding: 12px;
+  }
+}
+
+/* Admin Login Page Mobile */
+@media (max-width: 480px) {
+  .admin-login-page {
+    padding: 16px;
+  }
+  
+  .admin-login-form {
+    padding: 24px 16px;
+  }
+  
+  .admin-login-form h2 {
+    font-size: 22px;
+  }
+}
+
+/* About Page Mobile */
+@media (max-width: 768px) {
+  .about-section {
+    padding: 24px 16px;
+  }
+  
+  .about-content {
+    padding: 0;
+  }
+}
+
+/* Reviews Section Mobile */
+@media (max-width: 768px) {
+  .reviews-section {
+    padding: 24px 16px;
+  }
+  
+  .reviews-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Booking Modal Mobile Improvements */
+@media (max-width: 480px) {
+  .booking-modal-dashboard {
+    padding: 16px;
+  }
+  
+  .booking-section {
+    padding: 12px;
+  }
+  
+  .date-inputs {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .payment-methods {
+    gap: 8px;
+  }
+  
+  .payment-option {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .card-row.split {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* Transaction Receipt Mobile */
+@media (max-width: 480px) {
+  .receipt-vehicle {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .receipt-vehicle img {
+    width: 120px !important;
+    margin: 0 auto;
+  }
+  
+  .receipt-item {
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+  }
+  
+  .receipt-label,
+  .receipt-value {
+    width: 100%;
+  }
+}
+
+/* Admin Car Gallery Mobile */
+@media (max-width: 768px) {
+  .admin-car-gallery {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-car-gallery {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ensure all images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevent horizontal scroll */
+body {
+  overflow-x: hidden;
+}
+
+.App {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Fix for very wide content */
+* {
+  box-sizing: border-box;
+}
+
+/* Container max-width for large screens */
+@media (min-width: 1400px) {
+  .dashboard,
+  .admin-dashboard,
+  .layout {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+}
+
+/* Ultra-wide screen optimization */
+@media (min-width: 1920px) {
+  .rentals-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ========================================
+   FULL WIDTH LAYOUT
+   ======================================== */
+
+/* Remove max-width constraints for full-width layout */
+.App {
+  width: 100%;
+  max-width: 100% !important;
+}
+
+.layout,
+.dashboard,
+.admin-dashboard {
+  width: 100%;
+  max-width: 100% !important;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Hero section full width */
+.hero {
+  width: 100%;
+  max-width: 100% !important;
+}
+
+.hero-inner {
+  max-width: 100% !important;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Top Rentals full width */
+.top-rentals {
+  width: 100%;
+  max-width: 100% !important;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* Featured section full width */
+.featured-section {
+  width: 100%;
+  max-width: 100% !important;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* Cards grid full width */
+.cards-grid,
+.rentals-grid {
+  width: 100%;
+  max-width: 100% !important;
+}
+
+/* Admin dashboard full width */
+.admin-dashboard {
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.admin-section {
+  width: 100%;
+  max-width: 100% !important;
+}
+
+/* Keep text readable - max 80-100 characters per line */
+.hero-welcome,
+.about-content,
+.featured-section > p,
+.top-rentals > p {
+  max-width: 800px;
+}
+
+/* Reviews section full width */
+.reviews-section {
+  width: 100%;
+  max-width: 100% !important;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* About section full width */
+.about-section {
+  width: 100%;
+  max-width: 100% !important;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+/* Mobile adjustments for full width */
+@media (max-width: 768px) {
+  .hero-inner,
+  .top-rentals,
+  .featured-section,
+  .admin-dashboard,
+  .reviews-section,
+  .about-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-inner,
+  .top-rentals,
+  .featured-section,
+  .admin-dashboard,
+  .reviews-section,
+  .about-section {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* Remove the container max-width I added earlier */
+@media (min-width: 1400px) {
+  .dashboard,
+  .admin-dashboard,
+  .layout {
+    max-width: 100% !important;
+    margin: 0;
+  }
+}
+
+/* Adjust grid for ultra-wide screens */
+@media (min-width: 1920px) {
+  .rentals-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+  }
+  
+  .cards-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .rentals-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  .cards-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* ========================================
+   NAVBAR RESPONSIVE FIXES
+   ======================================== */
+
+/* Base Navbar Styles */
+.navbar {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.navbar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+/* Navbar Logo */
+.navbar-logo {
+  font-size: 24px;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Navbar Links (Landing Page) */
+.navbar-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.navbar-links a {
+  white-space: nowrap;
+  padding: 8px 16px;
+}
+
+/* Navbar Right Side */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.navbar-icons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Tablet (768px and below) */
+@media (max-width: 768px) {
+  .navbar-top {
+    padding: 12px 16px;
+  }
+  
+  .navbar-logo {
+    font-size: 20px;
+  }
+  
+  .navbar-links {
+    gap: 12px;
+  }
+  
+  .navbar-links a {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+  
+  .navbar-right {
+    gap: 8px;
+  }
+  
+  .navbar-icon {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* Small Tablet/Large Phone (640px and below) */
+@media (max-width: 640px) {
+  .navbar-top {
+    padding: 10px 12px;
+  }
+  
+  .navbar-logo {
+    font-size: 18px;
+  }
+  
+  /* Hide navbar links text, show only icons */
+  .navbar-links {
+    display: none;
+  }
+  
+  .navbar-right {
+    gap: 6px;
+  }
+  
+  .navbar-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  /* Make logout button smaller */
+  .navbar-logout {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Mobile (480px and below) */
+@media (max-width: 480px) {
+  .navbar-top {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  
+  .navbar-logo {
+    font-size: 16px;
+  }
+  
+  .navbar-right {
+    gap: 4px;
+  }
+  
+  .navbar-icon {
+    width: 34px;
+    height: 34px;
+  }
+  
+  .navbar-icons {
+    gap: 4px;
+  }
+  
+  /* Stack bookings popover better on mobile */
+  .bookings-popover {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: calc(100vw - 20px);
+  }
+}
+
+/* Extra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+  .navbar-top {
+    padding: 8px;
+  }
+  
+  .navbar-logo {
+    font-size: 15px;
+  }
+  
+  .navbar-icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .navbar-logout {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Navbar Search Popover Mobile Fix */
+@media (max-width: 768px) {
+  .navbar-search-popover {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: calc(100vw - 20px);
+  }
+  
+  .navbar-search-form {
+    padding: 12px;
+  }
+  
+  .navbar-search-dates {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .navbar-search-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .navbar-search-actions button {
+    width: 100%;
+  }
+}
+
+/* Bookings Popover Mobile */
+@media (max-width: 480px) {
+  .bookings-popover {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .bookings-item {
+    padding: 10px;
+    font-size: 12px;
+  }
+  
+  .bookings-id,
+  .bookings-user,
+  .bookings-car,
+  .bookings-dates,
+  .bookings-price {
+    font-size: 11px;
+  }
+  
+  .bookings-delete-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Prevent navbar from breaking */
+.navbar * {
+  box-sizing: border-box;
+}
+
+/* Ensure navbar stays on top */
+.navbar {
+  position: relative;
+  z-index: 100;
+}
+
+/* Fix for very narrow screens */
+@media (max-width: 320px) {
+  .navbar-logo {
+    font-size: 14px;
+  }
+  
+  .navbar-icon {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .navbar-right {
+    gap: 2px;
+  }
+}
+
+/* ========================================
+   ERROR BOUNDARY & ERROR HANDLING STYLES
+   ======================================== */
+
+/* Error Boundary */
+.error-boundary {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.error-boundary-content {
+  background: white;
+  border-radius: 16px;
+  padding: 48px;
+  max-width: 600px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.error-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.error-boundary-content h1 {
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.error-message {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.error-details {
+  text-align: left;
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.error-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.error-details pre {
+  font-size: 12px;
+  color: #e74c3c;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.error-btn {
+  padding: 12px 24px;
+  border: 2px solid #ddd;
+  background: white;
+  color: #666;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.error-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.error-btn.primary {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.error-btn.primary:hover {
+  background: #5568d3;
+  border-color: #5568d3;
+}
+
+/* Error Toast Notifications */
+.error-toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 10000;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.error-toast.fade-out {
+  animation: slideOut 0.3s ease-out forwards;
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+.error-toast-content {
+  background: #fff;
+  border-left: 4px solid #e74c3c;
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.error-toast-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.error-toast-message {
+  flex: 1;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.error-toast-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.error-toast-close:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* Mobile Error Styles */
+@media (max-width: 768px) {
+  .error-boundary-content {
+    padding: 32px 24px;
+  }
+  
+  .error-icon {
+    font-size: 60px;
+  }
+  
+  .error-boundary-content h1 {
+    font-size: 24px;
+  }
+  
+  .error-message {
+    font-size: 14px;
+  }
+  
+  .error-toast {
+    right: 10px;
+    left: 10px;
+  }
+  
+  .error-toast-content {
+    min-width: auto;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .error-boundary-content {
+    padding: 24px 16px;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .error-btn {
+    width: 100%;
+  }
+}
+
+/* Loading State for API Calls */
+.api-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.api-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ========================================
+   CONFIRMATION DIALOG STYLES
+   ======================================== */
+
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.confirm-dialog {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.confirm-dialog-icon {
+  font-size: 64px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.confirm-dialog-icon.danger {
+  color: #e74c3c;
+}
+
+.confirm-dialog-icon.warning {
+  color: #f39c12;
+}
+
+.confirm-dialog-icon.info {
+  color: #3498db;
+}
+
+.confirm-dialog-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.confirm-dialog-message {
+  font-size: 16px;
+  color: #666;
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirm-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.confirm-btn.cancel {
+  background: #ecf0f1;
+  color: #7f8c8d;
+}
+
+.confirm-btn.cancel:hover {
+  background: #bdc3c7;
+  transform: translateY(-2px);
+}
+
+.confirm-btn.confirm {
+  color: white;
+}
+
+.confirm-btn.confirm.danger {
+  background: #e74c3c;
+}
+
+.confirm-btn.confirm.danger:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+.confirm-btn.confirm.warning {
+  background: #f39c12;
+}
+
+.confirm-btn.confirm.warning:hover {
+  background: #e67e22;
+  transform: translateY(-2px);
+}
+
+.confirm-btn.confirm.info {
+  background: #3498db;
+}
+
+.confirm-btn.confirm.info:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+}
+
+/* Mobile Confirm Dialog */
+@media (max-width: 480px) {
+  .confirm-dialog {
+    padding: 24px;
+  }
+  
+  .confirm-dialog-icon {
+    font-size: 48px;
+  }
+  
+  .confirm-dialog-title {
+    font-size: 20px;
+  }
+  
+  .confirm-dialog-message {
+    font-size: 14px;
+  }
+  
+  .confirm-dialog-actions {
+    flex-direction: column;
+  }
+  
+  .confirm-btn {
+    width: 100%;
+  }
+}
+
+/* ========================================
+   ACTIVITY LOG STYLES
+   ======================================== */
+
+.activity-log {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.activity-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.activity-log-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.activity-log-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  color: #666;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.filter-btn.active {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.activity-log-loading,
+.activity-log-empty {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 16px;
+}
+
+.activity-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.activity-log-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #ddd;
+  transition: all 0.2s ease;
+}
+
+.activity-log-item:hover {
+  background: #e9ecef;
+  transform: translateX(4px);
+}
+
+.activity-icon {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.activity-icon.red {
+  background: #fee;
+  border-left-color: #e74c3c;
+}
+
+.activity-icon.green {
+  background: #efe;
+  border-left-color: #27ae60;
+}
+
+.activity-icon.blue {
+  background: #eef;
+  border-left-color: #3498db;
+}
+
+.activity-icon.gray {
+  background: #f5f5f5;
+  border-left-color: #95a5a6;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-action {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.activity-details {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #666;
+}
+
+.activity-detail {
+  color: #555;
+}
+
+.activity-user {
+  color: #3498db;
+  font-weight: 500;
+}
+
+.activity-time {
+  color: #999;
+}
+
+/* Mobile Activity Log */
+@media (max-width: 768px) {
+  .activity-log {
+    padding: 16px;
+  }
+  
+  .activity-log-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .activity-log-filters {
+    width: 100%;
+  }
+  
+  .filter-btn {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .activity-log-item {
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  .activity-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .activity-action {
+    font-size: 14px;
+  }
+  
+  .activity-details {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* ========================================
+   NAVBAR LOGO IMAGE STYLES
+   ======================================== */
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  padding: 6px 16px;
+}
+
+.navbar-logo-img {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+  max-width: 400px;
+  display: block;
+}
+
+/* Responsive Logo Sizes */
+@media (max-width: 768px) {
+  .navbar-logo-img {
+    height: 65px;
+    max-width: 320px;
+  }
+  
+  .navbar-logo {
+    padding: 5px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-logo-img {
+    height: 55px;
+    max-width: 260px;
+  }
+  
+  .navbar-logo {
+    padding: 4px 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .navbar-logo-img {
+    height: 50px;
+    max-width: 220px;
+  }
+  
+  .navbar-logo {
+    padding: 4px 8px;
+  }
+}
+
+/* ========================================
+   HERO SECTION LOGO
+   ======================================== */
+
+.hero-logo {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.hero-logo img {
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .hero-logo img {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-logo img {
+    max-width: 250px;
+  }
+  
+  .hero-logo {
+    margin-bottom: 16px;
+  }
+}
+
+/* ========================================
+   ENSURE LOGO STAYS LEFT
+   ======================================== */
+
+.navbar-top {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.navbar-logo {
+  order: 1;
+  margin-right: auto;
+}
+
+.navbar-links {
+  order: 2;
+  flex: 1;
+  justify-content: center;
+  margin: 0 20px;
+}
+
+.navbar-right {
+  order: 3;
+  margin-left: auto;
+}

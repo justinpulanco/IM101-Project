@@ -10,7 +10,9 @@ function MainNavbar({
   onLogout,
   currency
 }) {
-  const API = 'http://localhost:5000/api';
+  const API = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api' 
+    : 'http://192.168.254.125:5000/api';
 
   const handleLoadBookings = async () => {
     const next = !showBookingsPopover;
@@ -60,7 +62,9 @@ function MainNavbar({
     <>
       <nav className="navbar navbar-auth">
         <div className="navbar-top">
-          <div className="navbar-logo">Car2Go</div>
+          <div className="navbar-logo">
+            <img src="/download.png" alt="Car2Go U-Drive" className="navbar-logo-img" />
+          </div>
 
           <div className="navbar-right">
             <button

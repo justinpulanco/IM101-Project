@@ -4,14 +4,18 @@ function LandingNavbar({ onShowForms, onShowAdminLogin, setActiveTab }) {
   return (
     <nav className="navbar">
       <div className="navbar-top">
-        <div className="navbar-logo">Car2Go</div>
+        <div className="navbar-logo">
+          <img src="/download.png" alt="Car2Go U-Drive" className="navbar-logo-img" />
+        </div>
         
         <div className="navbar-links">
           <a
             href="#home"
             onClick={(e) => {
               e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              alert('Please log in to your account to access this.');
+              setActiveTab('login');
+              onShowForms(true);
             }}
           >
             Home

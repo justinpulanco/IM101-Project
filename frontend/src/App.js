@@ -1,17 +1,29 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import './App.css';
-import Dashboard from './Dashboard';
-import AdminDashboard from './AdminDashboard';
-import HomePage from './pages/HomePage';
-import AuthPage from './pages/AuthPage';
-import AdminLoginPage from './pages/AdminLoginPage';
-import LandingNavbar from './components/LandingNavbar';
-import MainNavbar from './components/MainNavbar';
+import ErrorBoundary from './components/ErrorBoundary';
 import useApi from './hooks/useApi';
 import { authService, carService, bookingService } from './services/apiService';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// AboutPage is rendered inside HomePage now
+import { handleApiError } from './utils/errorHandler';
+import { migrateLocalStorageUser } from './utils/roleMigration';
+
+// Lazy load components for better performance
+const Dashboard = lazy(() => import('./Dashboard'));
+const AdminDashboard = lazy(() => import('./AdminDashboard'));
+const HomePage = lazy(() => import('./pages/HomePage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
+const LandingNavbar = lazy(() => import('./components/LandingNavbar'));
+const MainNavbar = lazy(() => import('./components/MainNavbar'));
+
+// Loading component
+const LoadingFallback = () => (
+  <div className="loading-fallback" role="status" aria-live="polite">
+    <div className="spinner"></div>
+    <p>Loading...</p>
+  </div>
+);
 
 function App() {
   // API hooks
@@ -127,10 +139,13 @@ function App() {
       try {
         const response = await callAuth(() => authService.login(email, password));
         if (response.token) {
+          // Migrate user role if not set
+          const migratedUser = migrateLocalStorageUser() || response.user;
+          
           localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify(response.user));
+          localStorage.setItem('user', JSON.stringify(migratedUser));
           setToken(response.token);
-          setUser(response.user);
+          setUser(migratedUser);
           setIsAuthenticated(true);
           setShowForms(false);
           toast.success('Login successful!');
@@ -139,7 +154,8 @@ function App() {
         return false;
       } catch (err) {
         console.error('Login failed:', err);
-        toast.error(err.response?.data?.message || 'Login failed. Please try again.');
+        const errorMessage = handleApiError(err, err.response?.data?.message || 'Login failed. Please try again.');
+        toast.error(errorMessage);
         return false;
       }
     }
@@ -148,8 +164,11 @@ function App() {
       try {
         const response = await callAuth(() => authService.login(e.email, e.password));
         if (response.token) {
+          // Migrate user role if not set
+          const migratedUser = migrateLocalStorageUser() || response.user;
+          
           localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify(response.user));
+          localStorage.setItem('user', JSON.stringify(migratedUser));
           setToken(response.token);
           setUser(response.user);
           setIsAuthenticated(true);
@@ -174,26 +193,42 @@ function App() {
         const email = e.target.email?.value || regEmail;
         const password = e.target.password?.value || regPassword;
         
+        console.log('Registering user:', { name, email });
         const response = await callAuth(() => authService.register(name, email, password));
+        console.log('Registration response:', response);
         
-        if (response.user) {
+        // Check if registration was successful
+        if (response && (response.user || response.message)) {
+          toast.success('✅ Account created successfully!');
+          
           // Auto-login after successful registration
-          const loginResponse = await callAuth(() => authService.login(email, password));
-          if (loginResponse.token) {
-            localStorage.setItem('token', loginResponse.token);
-            localStorage.setItem('user', JSON.stringify(loginResponse.user));
-            setToken(loginResponse.token);
-            setUser(loginResponse.user);
-            setIsAuthenticated(true);
-            toast.success('Registration and login successful!');
-            setShowForms(false);
+          try {
+            const loginResponse = await callAuth(() => authService.login(email, password));
+            if (loginResponse.token) {
+              // Migrate user role if needed
+              const migratedUser = migrateLocalStorageUser() || loginResponse.user;
+              
+              localStorage.setItem('token', loginResponse.token);
+              localStorage.setItem('user', JSON.stringify(migratedUser));
+              setToken(loginResponse.token);
+              setUser(migratedUser);
+              setIsAuthenticated(true);
+              toast.success('🎉 Welcome! You are now logged in!');
+              setShowForms(false);
+              return true;
+            }
+          } catch (loginErr) {
+            console.error('Auto-login failed:', loginErr);
+            toast.info('Account created! Please login to continue.');
+            setActiveTab('login');
             return true;
           }
         }
         return false;
       } catch (err) {
         console.error('Registration failed:', err);
-        toast.error(err.response?.data?.message || 'Registration failed. Please try again.');
+        const errorMsg = err.response?.data?.message || err.message || 'Registration failed. Please try again.';
+        toast.error(`❌ ${errorMsg}`);
         return false;
       }
     } 
@@ -332,21 +367,27 @@ function App() {
     }
   };
 
-  const API = 'http://localhost:5000/api';
+  const API = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api' 
+    : 'http://192.168.254.125:5000/api';
 
-  // restore auth from localStorage
+  // restore auth from localStorage and migrate user role if needed
   useEffect(() => {
     try {
       const tokenSaved = localStorage.getItem('token');
-      const userSaved = localStorage.getItem('user');
       const adminTokenSaved = localStorage.getItem('adminToken');
+      
       if (tokenSaved) {
         setToken(tokenSaved);
         setIsAuthenticated(true);
       }
-      if (userSaved) {
-        setUser(JSON.parse(userSaved));
+      
+      // Migrate user role if needed
+      const migratedUser = migrateLocalStorageUser();
+      if (migratedUser) {
+        setUser(migratedUser);
       }
+      
       if (adminTokenSaved) {
         setAdminToken(adminTokenSaved);
         setIsAdminMode(true);
@@ -586,53 +627,57 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <ErrorBoundary>
+      <div className="App">
       {/* Conditional Navbar Rendering */}
-      {!isAuthenticated && !isAdminMode ? (
-        <LandingNavbar 
-          onShowForms={setShowForms}
-          onShowAdminLogin={() => setIsAdminMode(true)}
-          setActiveTab={setActiveTab}
-        />
-      ) : isAuthenticated && !isAdminMode ? (
-        <MainNavbar 
-          user={user}
-          token={token}
-          showBookingsPopover={showBookingsPopover}
-          setShowBookingsPopover={setShowBookingsPopover}
-          userBookings={userBookings}
-          setUserBookings={setUserBookings}
-          onLogout={handleLogout}
-          currency={currency}
-        />
-      ) : null}
+      <Suspense fallback={<LoadingFallback />}>
+        {!isAuthenticated && !isAdminMode ? (
+          <LandingNavbar 
+            onShowForms={setShowForms}
+            onShowAdminLogin={() => setIsAdminMode(true)}
+            setActiveTab={setActiveTab}
+          />
+        ) : isAuthenticated && !isAdminMode ? (
+          <MainNavbar 
+            user={user}
+            token={token}
+            showBookingsPopover={showBookingsPopover}
+            setShowBookingsPopover={setShowBookingsPopover}
+            userBookings={userBookings}
+            setUserBookings={setUserBookings}
+            onLogout={handleLogout}
+            currency={currency}
+          />
+        ) : null}
+      </Suspense>
 
       {/* Main content branches */}
-      {isAdminMode && !adminToken ? (
-        <AdminLoginPage 
-          adminEmail={adminEmail}
-          setAdminEmail={setAdminEmail}
-          adminPassword={adminPassword}
-          setAdminPassword={setAdminPassword}
-          onAdminLogin={handleAdminLogin}
-          onBackToCustomer={() => setIsAdminMode(false)}
-        />
-      ) : isAdminMode && adminToken ? (
-        <AdminDashboard apiBase={API} token={adminToken} onLogout={handleAdminLogout} />
-      ) : !isAuthenticated ? (
-        <>
-          <HomePage 
-            searchResults={searchResults}
-            onSearch={handleSearch}
-            onLoadAllCars={loadAllCars}
-            currency={currency}
-            getCarImage={getCarImage}
-            API={API}
+      <Suspense fallback={<LoadingFallback />}>
+        {isAdminMode && !adminToken ? (
+          <AdminLoginPage 
+            adminEmail={adminEmail}
+            setAdminEmail={setAdminEmail}
+            adminPassword={adminPassword}
+            setAdminPassword={setAdminPassword}
+            onAdminLogin={handleAdminLogin}
+            onBackToCustomer={() => setIsAdminMode(false)}
           />
+        ) : isAdminMode && adminToken ? (
+          <AdminDashboard apiBase={API} token={adminToken} onLogout={handleAdminLogout} />
+        ) : !isAuthenticated ? (
+          <>
+            <HomePage 
+              searchResults={searchResults}
+              onSearch={handleSearch}
+              onLoadAllCars={loadAllCars}
+              currency={currency}
+              getCarImage={getCarImage}
+              API={API}
+            />
 
-          {showForms && (
-            <AuthPage
-              onLogin={handleLogin}
+            {showForms && (
+              <AuthPage
+                onLogin={handleLogin}
               onRegister={handleRegister}
               loginEmail={loginEmail}
               setLoginEmail={setLoginEmail}
@@ -648,9 +693,9 @@ function App() {
             />
           )}
         </>
-      ) : (
-        <>
-          <Dashboard apiBase={API} token={token} user={user} onLogout={() => { setToken(''); setUser(null); setIsAuthenticated(false); }} />
+        ) : (
+          <>
+            <Dashboard apiBase={API} token={token} user={user} onLogout={() => { setToken(''); setUser(null); setIsAuthenticated(false); }} />
           
           {/* Booking Modal - only appears in Dashboard context */}
           {showBooking && (
@@ -746,9 +791,11 @@ function App() {
               </div>
             </div>
           )}
-        </>
-      )}
-    </div>
+          </>
+        )}
+      </Suspense>
+      </div>
+    </ErrorBoundary>
   );
 }
 

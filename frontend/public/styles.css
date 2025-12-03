@@ -164,3 +164,691 @@ footer {
     padding: 10px;
   }
 }
+/*
+ --------------------
+   Admin Dashboard
+-------------------- */
+.admin-dashboard {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.admin-container h1 {
+  margin: 0;
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  padding: 10px 20px;
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #ddd;
+  flex-wrap: wrap;
+}
+
+.admin-tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.admin-tab:hover {
+  color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.admin-tab.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+  font-weight: bold;
+}
+
+.admin-section {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.admin-table {
+  overflow-x: auto;
+}
+
+.admin-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  background-color: #f8f9fa;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.admin-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.admin-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.available {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.unavailable {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.action-btn {
+  padding: 6px 16px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.action-btn.delete {
+  background-color: #dc3545;
+}
+
+.action-btn.delete:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.add-cars-admin-btn {
+  padding: 15px 30px;
+  font-size: 18px;
+  background-color: #28a745;
+  margin: 20px 0;
+}
+
+.add-cars-admin-btn:hover {
+  background-color: #218838;
+}
+
+.admin-car-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.admin-car-photo-box {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.admin-car-photo-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.admin-car-photo-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-car-photo-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.admin-car-photo-info {
+  padding: 15px;
+  text-align: center;
+}
+
+.admin-car-photo-info h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+/* --------------------
+   Confirm Dialog
+-------------------- */
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.confirm-dialog {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.confirm-dialog-icon {
+  font-size: 48px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.confirm-dialog-icon.danger {
+  color: #dc3545;
+}
+
+.confirm-dialog-icon.warning {
+  color: #ffc107;
+}
+
+.confirm-dialog-icon.info {
+  color: #17a2b8;
+}
+
+.confirm-dialog-title {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.confirm-dialog-message {
+  font-size: 16px;
+  text-align: center;
+  color: #666;
+  margin: 0 0 25px 0;
+  line-height: 1.5;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.confirm-btn {
+  padding: 12px 30px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  min-width: 120px;
+}
+
+.confirm-btn.cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.confirm-btn.cancel:hover {
+  background-color: #5a6268;
+}
+
+.confirm-btn.confirm.danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.confirm-btn.confirm.danger:hover {
+  background-color: #c82333;
+}
+
+.confirm-btn.confirm.warning {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.confirm-btn.confirm.warning:hover {
+  background-color: #e0a800;
+}
+
+.confirm-btn.confirm.info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.confirm-btn.confirm.info:hover {
+  background-color: #138496;
+}
+
+/* --------------------
+   Activity Log
+-------------------- */
+.activity-log {
+  width: 100%;
+}
+
+.activity-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.activity-log-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.activity-log-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  background-color: #f8f9fa;
+  color: #333;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.filter-btn:hover {
+  background-color: #e9ecef;
+}
+
+.filter-btn.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.activity-log-loading,
+.activity-log-empty {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+.activity-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activity-log-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #dee2e6;
+  transition: all 0.3s;
+}
+
+.activity-log-item:hover {
+  background-color: #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.activity-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.activity-icon.red {
+  background-color: #fee;
+  border-left-color: #dc3545;
+}
+
+.activity-icon.green {
+  background-color: #efe;
+  border-left-color: #28a745;
+}
+
+.activity-icon.blue {
+  background-color: #eef;
+  border-left-color: #007bff;
+}
+
+.activity-icon.gray {
+  background-color: #f5f5f5;
+  border-left-color: #6c757d;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-action {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.activity-details {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: #666;
+}
+
+.activity-detail {
+  color: #495057;
+}
+
+.activity-user {
+  color: #007bff;
+  font-weight: 500;
+}
+
+.activity-time {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* --------------------
+
+/* --------------------
+   Form Validation Styles
+-------------------- */
+.form-field {
+  margin-bottom: 15px;
+}
+
+.form-field input.error {
+  border-color: #e74c3c;
+  background-color: #fee;
+}
+
+.error-message {
+  display: block;
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 5px;
+  margin-left: 2px;
+}
+
+/* --------------------
+   Access Denied Styles
+-------------------- */
+.access-denied {
+  text-align: center;
+  padding: 60px 20px;
+  max-width: 500px;
+  margin: 100px auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.access-denied h2 {
+  font-size: 32px;
+  margin-bottom: 15px;
+  color: #e74c3c;
+}
+
+.access-denied p {
+  font-size: 16px;
+  color: #666;
+}
+
+/* --------------------
+   Loading Fallback (Code Splitting)
+-------------------- */
+.loading-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 40px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-fallback p {
+  margin-top: 15px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* --------------------
+   Keyboard Navigation & Focus Styles
+-------------------- */
+*:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #007bff;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 10000;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Improve button accessibility */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus visible for keyboard navigation */
+.focus-visible:focus {
+  outline: 3px solid #007bff;
+  outline-offset: 3px;
+}
+
+/* Improve modal accessibility */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content:focus {
+  outline: none;
+}
+
+/* Keyboard navigation for tabs */
+.admin-tab:focus,
+.modal-tab:focus,
+.filter-btn:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Improve link accessibility */
+a:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+  text-decoration: underline;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  button {
+    border: 2px solid currentColor;
+  }
+  
+  input,
+  select,
+  textarea {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .spinner {
+    animation: none;
+    border-top-color: transparent;
+  }
+}
+
+/* --------------------
+   Success Message
+-------------------- */
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 5px;
+  padding: 12px 16px;
+  margin: 15px 0;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button loading state */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,6 +1,10 @@
 // Centralized API service to avoid code duplication
 
-const API = 'http://localhost:5000/api';
+// Use computer's IP address for mobile access
+// Change this to your computer's IP if different
+const API = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5000/api' 
+  : 'http://192.168.254.125:5000/api';
 
 // ============ AUTH ENDPOINTS ============
 export const authService = {

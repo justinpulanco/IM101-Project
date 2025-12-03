@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import ConfirmDialog from './components/ConfirmDialog';
+import ActivityLog from './components/ActivityLog';
+import { logActivity, ActivityActions } from './utils/activityLogger';
 
 // Loading spinner component
 const LoadingSpinner = ({ size = 20, color = '#3498db' }) => (
@@ -43,12 +46,21 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [activeTab, setActiveTab] = useState('cars'); // 'cars', 'users', 'bookings', or 'add-cars'
+  const [activeTab, setActiveTab] = useState('cars'); // 'cars', 'users', 'bookings', 'activity', or 'add-cars'
   const [loading, setLoading] = useState({
     cars: false,
     users: false,
     bookings: false,
     action: null // 'toggle', 'delete', 'addAll'
+  });
+
+  // ConfirmDialog state
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    type: 'danger'
   });
 
   const authHeaders = { Authorization: `Bearer ${token}` };
@@ -230,132 +242,183 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
   };
 
   const handleToggleCarAvailability = async (carId, currentStatus) => {
-    setLoading(prev => ({ ...prev, action: 'toggle' }));
-    const originalCars = [...cars];
+    const car = cars.find(c => c.id === carId);
+    const carModel = car?.model || 'Unknown Car';
     
-    try {
-      const confirmed = window.confirm(
-        `Are you sure you want to mark this car as ${currentStatus ? 'unavailable' : 'available'}?`
-      );
-      if (!confirmed) return;
-      
-      setCars(prevCars => 
-        prevCars.map(car => 
-          car.id === carId 
-            ? { 
-                ...car, 
-                is_available: !currentStatus,
-                available: !currentStatus 
-              } 
-            : car
-        )
-      );
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Toggle Car Availability',
+      message: `Are you sure you want to mark "${carModel}" as ${currentStatus ? 'unavailable' : 'available'}?`,
+      type: 'warning',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        setLoading(prev => ({ ...prev, action: 'toggle' }));
+        const originalCars = [...cars];
+        
+        try {
+          setCars(prevCars => 
+            prevCars.map(c => 
+              c.id === carId 
+                ? { 
+                    ...c, 
+                    is_available: !currentStatus,
+                    available: !currentStatus 
+                  } 
+                : c
+            )
+          );
 
-      const res = await fetch(`${apiBase}/cars/${carId}`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json', 
-          ...authHeaders 
-        },
-        body: JSON.stringify({ 
-          availability: currentStatus ? 0 : 1,
-        }),
-      });
+          const res = await fetch(`${apiBase}/cars/${carId}`, {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json', 
+              ...authHeaders 
+            },
+            body: JSON.stringify({ 
+              availability: currentStatus ? 0 : 1,
+            }),
+          });
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        throw new Error(error.message || 'Failed to update car availability');
+          if (!res.ok) {
+            const error = await res.json().catch(() => ({}));
+            throw new Error(error.message || 'Failed to update car availability');
+          }
+
+          const updatedCar = await res.json();
+          
+          setCars(prevCars => 
+            prevCars.map(c => 
+              c.id === carId 
+                ? { 
+                    ...c, 
+                    is_available: updatedCar.is_available || !currentStatus,
+                    available: updatedCar.available || !currentStatus
+                  } 
+                : c
+            )
+          );
+          
+          // Log activity
+          await logActivity(
+            ActivityActions.TOGGLE_CAR(carModel, !currentStatus),
+            `Car ID: ${carId}`,
+            'Admin',
+            apiBase,
+            token
+          );
+          
+          setTimeout(() => {
+            alert(`Car marked as ${!currentStatus ? 'available' : 'unavailable'} successfully!`);
+          }, 100);
+          
+        } catch (err) {
+          setCars(originalCars);
+          console.error('Error toggling car availability:', err);
+          alert(`Error: ${err.message || 'Failed to update car availability. Please try again.'}`);
+        } finally {
+          setLoading(prev => ({ ...prev, action: null }));
+        }
       }
-
-      const updatedCar = await res.json();
-      
-      setCars(prevCars => 
-        prevCars.map(car => 
-          car.id === carId 
-            ? { 
-                ...car, 
-                is_available: updatedCar.is_available || !currentStatus,
-                available: updatedCar.available || !currentStatus
-              } 
-            : car
-        )
-      );
-      
-      setTimeout(() => {
-        alert(`Car marked as ${!currentStatus ? 'available' : 'unavailable'} successfully!`);
-      }, 100);
-      
-    } catch (err) {
-      setCars(originalCars);
-      console.error('Error toggling car availability:', err);
-      alert(`Error: ${err.message || 'Failed to update car availability. Please try again.'}`);
-    } finally {
-      setLoading(prev => ({ ...prev, action: null }));
-    }
+    });
   };
 
   const [deletingUser, setDeletingUser] = useState(null);
-  const [updatingCar, setUpdatingCar] = useState(null);
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Delete this user?')) return;
-    setDeletingUser(userId);
-    try {
-      const res = await fetch(`${apiBase}/auth/users/${userId}`, {
-        method: 'DELETE',
-        headers: { ...authHeaders },
-      });
-      const data = await res.json();
-      alert(data.message || 'User deleted');
-      await loadUsers();
-    } catch (err) {
-      console.error('delete user', err);
-      alert('Error deleting user');
-    } finally {
-      setDeletingUser(null);
-    }
+    const user = users.find(u => u.id === userId);
+    const userName = user?.name || user?.email || 'Unknown User';
+    
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete User',
+      message: `Are you sure you want to delete user "${userName}"? This action cannot be undone.`,
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        setDeletingUser(userId);
+        try {
+          const res = await fetch(`${apiBase}/auth/users/${userId}`, {
+            method: 'DELETE',
+            headers: { ...authHeaders },
+          });
+          const data = await res.json();
+          
+          // Log activity
+          await logActivity(
+            ActivityActions.DELETE_USER(userName),
+            `User ID: ${userId}`,
+            'Admin',
+            apiBase,
+            token
+          );
+          
+          alert(data.message || 'User deleted');
+          await loadUsers();
+        } catch (err) {
+          console.error('delete user', err);
+          alert('Error deleting user');
+        } finally {
+          setDeletingUser(null);
+        }
+      }
+    });
   };
 
   // Add all car photos to database
-  const [addingCars, setAddingCars] = useState(false);
-
   const handleAddAllCars = async () => {
-    if (!window.confirm(`Add ${allCarPhotos.length} cars to the database?`)) return;
-    
-    setAddingCars(true);
-    setLoading(prev => ({ ...prev, action: 'addAll' }));
-    
-    try {
-      for (const photo of allCarPhotos) {
-        const carName = getCarNameFromFile(photo);
-        const res = await fetch(`${apiBase}/cars`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders },
-          body: JSON.stringify({
-            model: carName,
-            make: carName.split(' ')[0],
-            year: new Date().getFullYear(),
-            price_per_day: 299,
-            is_available: true,
-            type: 'Sedan',
-            transmission: 'Automatic',
-            image: `/${photo}`
-          }),
-        });
-        const data = await res.json();
-        console.log(`Added: ${carName}`, data);
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Add All Cars',
+      message: `Are you sure you want to add ${allCarPhotos.length} cars to the database?`,
+      type: 'info',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        setLoading(prev => ({ ...prev, action: 'addAll' }));
+        
+        try {
+          let addedCount = 0;
+          for (const photo of allCarPhotos) {
+            const carName = getCarNameFromFile(photo);
+            const res = await fetch(`${apiBase}/cars`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', ...authHeaders },
+              body: JSON.stringify({
+                model: carName,
+                make: carName.split(' ')[0],
+                year: new Date().getFullYear(),
+                price_per_day: 299,
+                is_available: true,
+                type: 'Sedan',
+                transmission: 'Automatic',
+                image: `/${photo}`
+              }),
+            });
+            const data = await res.json();
+            console.log(`Added: ${carName}`, data);
+            addedCount++;
+          }
+          
+          // Log activity
+          await logActivity(
+            `Added ${addedCount} cars to database`,
+            `Bulk car addition`,
+            'Admin',
+            apiBase,
+            token
+          );
+          
+          alert(`✅ All ${allCarPhotos.length} cars have been added to the database!`);
+          await loadCars();
+          setLoading(prev => ({ ...prev, action: null }));
+          setActiveTab('cars');
+        } catch (err) {
+          console.error('Error adding cars:', err);
+          alert('Error adding cars to database');
+        } finally {
+          setLoading(prev => ({ ...prev, cars: false }));
+        }
       }
-      alert(`✅ All ${allCarPhotos.length} cars have been added to the database!`);
-      await loadCars();
-      setAddingCars(false);
-      setLoading(prev => ({ ...prev, action: null }));
-      setActiveTab('cars');
-    } catch (err) {
-      console.error('Error adding cars:', err);
-      alert('Error adding cars to database');
-    } finally {
-      setLoading(prev => ({ ...prev, cars: false }));
-    }
+    });
   };
 
   return (
@@ -389,6 +452,12 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
           onClick={() => setActiveTab('bookings')}
         >
           📅 Bookings ({bookings.length})
+        </button>
+        <button
+          className={`admin-tab ${activeTab === 'activity' ? 'active' : ''}`}
+          onClick={() => setActiveTab('activity')}
+        >
+          📋 Activity Log
         </button>
         <button
           className={`admin-tab ${activeTab === 'add-cars' ? 'active' : ''}`}
@@ -434,10 +503,10 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
                         <button
                           onClick={() => handleToggleCarAvailability(car.id, car.is_available)}
                           className="action-btn"
-                          disabled={loading.action === 'toggle' && updatingCar === car.id}
+                          disabled={loading.action === 'toggle'}
                           style={{ minWidth: '80px' }}
                         >
-                          {loading.action === 'toggle' && updatingCar === car.id ? (
+                          {loading.action === 'toggle' ? (
                             <LoadingSpinner size={16} color="#fff" />
                           ) : 'Toggle'}
                         </button>
@@ -532,6 +601,12 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
         </div>
       )}
 
+      {activeTab === 'activity' && (
+        <div className="admin-section">
+          <ActivityLog apiBase={apiBase} token={token} />
+        </div>
+      )}
+
       {activeTab === 'add-cars' && (
         <div className="admin-section">
           <h2>🚗 Add Car Photos to Database</h2>
@@ -555,6 +630,16 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
     </div>
   );
 }
