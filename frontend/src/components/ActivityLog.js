@@ -7,21 +7,25 @@ function ActivityLog({ apiBase, token }) {
 
   useEffect(() => {
     loadLogs();
+    
+    // Auto-refresh every 5 seconds to catch new logs
+    const interval = setInterval(() => {
+      loadLogs();
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const loadLogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBase}/activity-logs`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setLogs(Array.isArray(data) ? data : []);
+      // Load from localStorage (primary storage for activity logs)
+      const localLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+      console.log('Loaded activity logs from localStorage:', localLogs.length);
+      setLogs(localLogs);
     } catch (err) {
       console.error('Failed to load activity logs:', err);
-      // Load from localStorage as fallback
-      const localLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
-      setLogs(localLogs);
+      setLogs([]);
     } finally {
       setLoading(false);
     }
@@ -51,7 +55,7 @@ function ActivityLog({ apiBase, token }) {
   return (
     <div className="activity-log">
       <div className="activity-log-header">
-        <h2>📋 Activity Log</h2>
+        <h2>📋 Activity Log ({filteredLogs.length})</h2>
         <div className="activity-log-filters">
           <button 
             className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
@@ -76,6 +80,13 @@ function ActivityLog({ apiBase, token }) {
             onClick={() => setFilter('update')}
           >
             Updates
+          </button>
+          <button 
+            className="filter-btn refresh-btn"
+            onClick={loadLogs}
+            title="Refresh logs"
+          >
+            🔄 Refresh
           </button>
         </div>
       </div>

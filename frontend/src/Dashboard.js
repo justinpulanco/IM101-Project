@@ -194,21 +194,18 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
     
     // Map of car names to photo filenames
     const carPhotos = {
-      'Chevrolet Camaro': '1967 Chevrolet Camaro.png',
-      'Dodge Charger': '1970 Dodge Charger.png',
-      'Mazda RX-7': '1993 Mazda RX-7 FD.png',
-      'Honda Civic': '1995 Honda Civic EG.png',
-      'Mitsubishi Eclipse': '1995 Mitsubishi Eclipse.png',
-      'Toyota Supra': '1995 Toyota Supra Mk4.png',
-      'Nissan Skyline': '1999 Nissan Skyline GT-R R34.png',
-      'Nissan Silvia': '2002 Nissan Silvia S15.png',
-      'Nissan 350Z': '2006 Nissan 350Z.png',
-      'Dodge Challenger': '2008 Dodge Challenger SRT8.png',
       'Ford Ranger': 'Ford Ranger.png',
       'Honda CR-V': 'Honda CR-V.png',
       'Hyundai Accent': 'Hyundai Accent.png',
+      'Hyundai Grand Starex': 'Hyundai Grand Starex.png',
+      'Kia Picanto': 'Kia Picanto.png',
       'Mitsubishi Xpander': 'Mitsubishi Xpander.webp',
       'Nissan Almera': 'nissan almera.png',
+      'Tonery Tiggo 2': 'Tonery Tiggo 2.png',
+      'Toyota Fortuner': 'Toyota Fortuner.png',
+      'Toyota HiAce': 'Toyota Hiace.png',
+      'Toyota Hilux': 'Toyota Hilux.png',
+      'Toyota Scion xB': 'Toyota Scion xB.png',
       'Toyota Vios': 'Toyota Vios.png',
     };
     
@@ -232,19 +229,61 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
     try {
       const res = await fetch(`${apiBase}/cars`);
       const data = await res.json();
+      console.log('Cars loaded:', data);
       setCars(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('loadCars', err);
+      console.error('loadCars error:', err);
+      alert('Failed to load cars. Please refresh the page.');
     }
   };
 
   const loadBookings = async () => {
     try {
-      const res = await fetch(`${apiBase}/bookings`, { headers: authHeaders });
+      // Only load bookings for the current logged-in user
+      if (!user || !user.id) {
+        console.warn('No user ID available for loading bookings');
+        setBookings([]);
+        return;
+      }
+      
+      // Add cache-busting parameter to force fresh data
+      const timestamp = new Date().getTime();
+      const res = await fetch(`${apiBase}/bookings/user/${user.id}?t=${timestamp}`, { 
+        headers: {
+          ...authHeaders,
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       const data = await res.json();
+      console.log('Loaded bookings:', data);
       setBookings(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('loadBookings', err);
+      setBookings([]);
+    }
+  };
+
+  // Cancel booking
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    
+    try {
+      const res = await fetch(`${apiBase}/bookings/${bookingId}`, {
+        method: 'DELETE',
+        headers: authHeaders
+      });
+      
+      if (res.ok) {
+        alert('Booking cancelled successfully!');
+        loadBookings();
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Failed to cancel booking');
+      }
+    } catch (err) {
+      console.error('Cancel booking error:', err);
+      alert('Error cancelling booking');
     }
   };
 
@@ -257,6 +296,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
   // Filter and search logic
   const getFilteredCars = () => {
     let filtered = [...cars];
+    console.log('Initial cars:', filtered.length);
     
     // Search filter
     if (searchTerm) {
@@ -265,6 +305,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
         (car.model && car.model.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (car.type && car.type.toLowerCase().includes(searchTerm.toLowerCase()))
       );
+      console.log('After search filter:', filtered.length);
     }
     
     // Type filter
@@ -272,6 +313,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
       filtered = filtered.filter(car => 
         car.type && car.type.toLowerCase() === filterType.toLowerCase()
       );
+      console.log('After type filter:', filtered.length);
     }
     
     // Availability filter
@@ -280,6 +322,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
       filtered = filtered.filter(car => 
         (car.availability === 1 || car.availability === true) === isAvailable
       );
+      console.log('After availability filter:', filtered.length, 'filterAvailability:', filterAvailability);
     }
     
     // Sort
@@ -296,16 +339,137 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
       return 0;
     });
     
+    console.log('Final filtered cars:', filtered.length);
     return filtered;
   };
 
   return (
     <div className="dashboard">
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}} />
+      {/* Sticky Dashboard Header */}
+      <div className="dashboard-header dashboard-header-unique">
+        <div className="dashboard-header-left">
+          <h1 className="dashboard-title">Car Dashboard</h1>
+        </div>
+        
+        {/* Logo in Center Circle */}
+        <div className="dashboard-logo-center">
+          <div className="dashboard-logo-circle">
+            <img src="/download.png" alt="Car2Go U-Drive" className="dashboard-logo" />
+          </div>
+        </div>
+        <div className="dashboard-header-right">
+          <span className="dashboard-user">Welcome, {user?.name || 'User'}! 👋</span>
+          <button 
+            className="dashboard-bookings-btn"
+            onClick={() => {
+              setShowBookings(!showBookings);
+              if (!showBookings) loadBookings();
+            }}
+            title="Your Bookings"
+          >
+            <span className="bookings-icon">📅</span>
+            <span className="bookings-text">Your Bookings</span>
+            {bookings.length > 0 && <span className="bookings-badge">{bookings.length}</span>}
+          </button>
+          <button 
+            className="dashboard-logout-btn"
+            onClick={onLogout}
+            title="Logout"
+          >
+            🚪 Logout
+          </button>
+        </div>
+      </div>
+
+      {/* Bookings Popover */}
+      {showBookings && (
+        <div className="bookings-popover">
+          <div className="bookings-popover-header">
+            <h3>📅 Your Bookings</h3>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button 
+                className="refresh-bookings-btn"
+                onClick={loadBookings}
+                title="Refresh bookings"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  padding: '4px 8px'
+                }}
+              >
+                🔄
+              </button>
+              <button 
+                className="close-popover-btn"
+                onClick={() => setShowBookings(false)}
+                aria-label="Close bookings"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+          <div className="bookings-popover-content">
+            {bookings.length === 0 ? (
+              <div className="no-bookings" style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                color: '#000',
+                fontSize: '15px',
+                fontWeight: '600'
+              }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
+                <p style={{ margin: '0 0 8px 0', color: '#000', fontWeight: '700', fontSize: '16px' }}>
+                  No bookings yet
+                </p>
+                <p style={{ margin: '0', color: '#666', fontSize: '14px', fontWeight: '400' }}>
+                  Book a car to get started!
+                </p>
+              </div>
+            ) : (
+              <div className="bookings-list">
+                {bookings.map((booking) => {
+                  // Get car name from booking - backend returns it as 'car' field
+                  const carName = booking.car || booking.car_model || booking.car_name || booking.model || 'Unknown Car';
+                  
+                  return (
+                    <div key={booking.id} className="booking-item">
+                      <div className="booking-info">
+                        <div className="booking-car-name">
+                          🚗 <strong>{carName}</strong>
+                        </div>
+                        <span className="booking-dates">
+                          📅 {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
+                        </span>
+                        <span className="booking-price">💰 ₱{booking.total_price || 0}</span>
+                        <div className="booking-actions">
+                          <span className={`booking-status ${booking.status || 'pending'}`}>
+                            {booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Pending'}
+                          </span>
+                          {(booking.status === 'pending' || !booking.status) && (
+                            <button 
+                              className="cancel-booking-btn"
+                              onClick={() => handleCancelBooking(booking.id)}
+                              title="Cancel this booking"
+                            >
+                              ❌ Cancel
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Top Rentals Section */}
       <section className="top-rentals">
-        <h2>Our Top Rentals</h2>
+        <h2 style={{ color: '#8B0000' }}>Our Top Rentals</h2>
         <p>Discover our top car rentals, providing comfort, affordability, and convenience to make your next journey smooth and enjoyable!</p>
         
         {/* Search and Filter Bar */}
@@ -336,8 +500,6 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
               <option value="all">All Types</option>
               <option value="sedan">Sedan</option>
               <option value="suv">SUV</option>
-              <option value="sports">Sports</option>
-              <option value="muscle">Muscle</option>
               <option value="compact">Compact</option>
               <option value="mpv">MPV</option>
               <option value="pickup">Pickup</option>
@@ -351,7 +513,7 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
               }}
               className="filter-select"
             >
-              <option value="all">All Status</option>
+              <option value="all">All Cars</option>
               <option value="available">Available</option>
               <option value="unavailable">Unavailable</option>
             </select>
@@ -380,27 +542,59 @@ export default function Dashboard({ apiBase, token, onLogout, user }) {
             const indexOfFirstCar = indexOfLastCar - carsPerPage;
             const currentCars = filteredCars.slice(indexOfFirstCar, indexOfLastCar);
             
-            return currentCars.map((car) => (
-              <div key={car.id || car._id} className="rental-card">
+            return currentCars.map((car) => {
+              const isAvailable = car.availability === 1 || car.availability === true;
+              
+              return (
+              <div key={car.id || car._id} className={`rental-card ${!isAvailable ? 'rental-card-unavailable' : ''}`}>
                 <div className="rental-image-wrapper">
-                  <img src={getCarImage(car)} alt={car.model || 'car'} className="rental-image" />
+                  <img 
+                    src={getCarImage(car)} 
+                    alt={car.model || 'car'} 
+                    className="rental-image"
+                    style={!isAvailable ? { filter: 'grayscale(50%) brightness(0.8)' } : {}}
+                  />
+                  {!isAvailable && (
+                    <div className="rental-unavailable-overlay">
+                      <div className="rental-unavailable-badge">
+                        <span className="rental-unavailable-icon">🚫</span>
+                        <span className="rental-unavailable-text">Currently Rented</span>
+                      </div>
+                    </div>
+                  )}
                   <button className="rental-heart">♥</button>
                 </div>
                 <div className="rental-info">
                   <p className="rental-type">{car.type || 'Sedan'}</p>
-                  <h3 className="rental-name">{car.make ? `${car.make} ${car.model || ''}` : car.model || 'Car'}</h3>
-                  <p className="rental-transmission">{car.transmission || 'Automatic'}</p>
+                  <h3 className="rental-name">{car.model || 'Car'}</h3>
+                  <p className="rental-year" style={{ fontSize: '13px', color: '#666', marginTop: '-8px' }}>
+                    {car.year ? `${car.year} Model` : ''}
+                  </p>
                   <p className="rental-price">₱{car.price_per_day || car.price || '—'}/day</p>
-                  <button 
-                    class="capitalize"
-                    className="rental-btn"
-                    onClick={() => openBookingModal(car)}
-                  >
-                    Rent this car
-                  </button>
+                  {isAvailable ? (
+                    <button 
+                      className="rental-btn"
+                      onClick={() => openBookingModal(car)}
+                    >
+                      Rent this car
+                    </button>
+                  ) : (
+                    <button 
+                      className="rental-btn rental-btn-disabled"
+                      disabled
+                      style={{
+                        backgroundColor: '#ccc',
+                        cursor: 'not-allowed',
+                        opacity: 0.6
+                      }}
+                    >
+                      Not Available
+                    </button>
+                  )}
                 </div>
               </div>
-            ));
+              );
+            });
           })()}
         </div>
         

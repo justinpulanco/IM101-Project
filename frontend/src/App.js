@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import './App.css';
 import ErrorBoundary from './components/ErrorBoundary';
+import BackToTop from './components/BackToTop';
 import useApi from './hooks/useApi';
 import { authService, carService, bookingService } from './services/apiService';
 import { toast } from 'react-toastify';
@@ -15,7 +16,6 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
 const LandingNavbar = lazy(() => import('./components/LandingNavbar'));
-const MainNavbar = lazy(() => import('./components/MainNavbar'));
 
 // Loading component
 const LoadingFallback = () => (
@@ -27,9 +27,9 @@ const LoadingFallback = () => (
 
 function App() {
   // API hooks
-  const { callApi: callAuth, loading: authLoading, error: authError } = useApi();
-  const { callApi: callCar, loading: carLoading, error: carError } = useApi();
-  const { callApi: callBooking, loading: bookingLoading, error: bookingError } = useApi();
+  const { callApi: callAuth, error: authError } = useApi();
+  const { callApi: callCar, error: carError } = useApi();
+  const { callApi: callBooking, error: bookingError } = useApi();
   
   // State management
   const [token, setToken] = useState(localStorage.getItem('token') || '');
@@ -50,13 +50,10 @@ function App() {
   // UI states
   const [activeTab, setActiveTab] = useState('login');
   const [searchResults, setSearchResults] = useState([]);
-  const [showPublicDashboard, setShowPublicDashboard] = useState(false);
   const [showAllCars, setShowAllCars] = useState(false);
   const [allCarsDisplay, setAllCarsDisplay] = useState([]);
   const [showForms, setShowForms] = useState(true);
   const [showNavbarSearch, setShowNavbarSearch] = useState(false);
-  const [showBookingsPopover, setShowBookingsPopover] = useState(false);
-  const [showCarDropdown, setShowCarDropdown] = useState(false);
 
   
   // Booking states
@@ -66,8 +63,6 @@ function App() {
   const [bookingStart, setBookingStart] = useState('');
   const [bookingEnd, setBookingEnd] = useState('');
   const [bookingTotal, setBookingTotal] = useState('');
-  const [userBookings, setUserBookings] = useState([]);
-  const [selectedCar, setSelectedCar] = useState(null);
   const [isAvailable, setIsAvailable] = useState(false);
   
   // Refs
@@ -104,30 +99,7 @@ function App() {
     calculateBookingTotal();
   }, [calculateBookingTotal]);
 
-  // Load cars for booking modal
-  const loadCarsForBooking = useCallback(async () => {
-    try {
-      const data = await callCar(() => carService.getAll());
-      setCarsList(Array.isArray(data) ? data : []);
-      return data;
-    } catch (err) {
-      console.error('Error loading cars for booking:', err);
-      setCarsList([]);
-      return [];
-    }
-  }, [callCar]);
 
-  // Load all cars for display
-  const loadAllCars = useCallback(async () => {
-    try {
-      const data = await callCar(() => carService.getAll());
-      setAllCarsDisplay(Array.isArray(data) ? data : []);
-      setShowAllCars(true);
-    } catch (err) {
-      console.error('Error loading cars:', err);
-      setAllCarsDisplay([]);
-    }
-  }, [callCar]);
 
   // Handle user login
   const handleLogin = useCallback(async (e) => {
@@ -139,13 +111,18 @@ function App() {
       try {
         const response = await callAuth(() => authService.login(email, password));
         if (response.token) {
-          // Migrate user role if not set
-          const migratedUser = migrateLocalStorageUser() || response.user;
+          // Use the fresh user data from the login response
+          const userData = response.user;
           
+          // Clear old data first
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          
+          // Set new user data
           localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify(migratedUser));
+          localStorage.setItem('user', JSON.stringify(userData));
           setToken(response.token);
-          setUser(migratedUser);
+          setUser(userData);
           setIsAuthenticated(true);
           setShowForms(false);
           toast.success('Login successful!');
@@ -164,13 +141,18 @@ function App() {
       try {
         const response = await callAuth(() => authService.login(e.email, e.password));
         if (response.token) {
-          // Migrate user role if not set
-          const migratedUser = migrateLocalStorageUser() || response.user;
+          // Use the fresh user data from the login response
+          const userData = response.user;
           
+          // Clear old data first
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          
+          // Set new user data
           localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify(migratedUser));
+          localStorage.setItem('user', JSON.stringify(userData));
           setToken(response.token);
-          setUser(response.user);
+          setUser(userData);
           setIsAuthenticated(true);
           toast.success('Login successful!');
           return true;
@@ -205,13 +187,18 @@ function App() {
           try {
             const loginResponse = await callAuth(() => authService.login(email, password));
             if (loginResponse.token) {
-              // Migrate user role if needed
-              const migratedUser = migrateLocalStorageUser() || loginResponse.user;
+              // Use the fresh user data from the login response
+              const userData = loginResponse.user;
               
+              // Clear old data first
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              
+              // Set new user data
               localStorage.setItem('token', loginResponse.token);
-              localStorage.setItem('user', JSON.stringify(migratedUser));
+              localStorage.setItem('user', JSON.stringify(userData));
               setToken(loginResponse.token);
-              setUser(migratedUser);
+              setUser(userData);
               setIsAuthenticated(true);
               toast.success('🎉 Welcome! You are now logged in!');
               setShowForms(false);
@@ -253,52 +240,7 @@ function App() {
     }
   }, [callAuth, regName, regEmail, regPassword, setActiveTab, setShowForms]);
 
-  // Check car availability
-  const checkCarAvailability = useCallback(async (carId, startDate, endDate) => {
-    try {
-      const isAvailable = await callBooking(() => 
-        bookingService.checkAvailability(carId, startDate, endDate)
-      );
-      setIsAvailable(isAvailable);
-      return isAvailable;
-    } catch (err) {
-      console.error('Error checking car availability:', err);
-      return false;
-    }
-  }, [callBooking]);
 
-  // Create a new booking
-  const createBooking = useCallback(async (bookingData) => {
-    try {
-      const newBooking = await callBooking(() => 
-        bookingService.create(bookingData, token)
-      );
-      if (newBooking) {
-        toast.success('Booking created successfully!');
-        setShowBooking(false);
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Error creating booking:', err);
-      return false;
-    }
-  }, [callBooking, token]);
-
-  // Load user bookings
-  const loadUserBookings = useCallback(async () => {
-    if (!isAuthenticated) return;
-    
-    try {
-      const bookings = await callBooking(() => 
-        bookingService.getAll(token, { userId: user?.id })
-      );
-      setUserBookings(Array.isArray(bookings) ? bookings : []);
-    } catch (err) {
-      console.error('Error loading user bookings:', err);
-      setUserBookings([]);
-    }
-  }, [callBooking, isAuthenticated, token, user?.id]);
   const checkAvailability = async (carId, startDate, endDate) => {
     if (!carId || !startDate || !endDate) {
       setIsAvailable(false);
@@ -324,48 +266,7 @@ function App() {
     }
   };
 
-  // Handle booking a car
-  const handleBookCar = async (carId) => {
-    if (!carId || !bookingStart || !bookingEnd) {
-      alert('Please select a car and dates');
-      return;
-    }
 
-    const isCarAvailable = await checkAvailability(carId, bookingStart, bookingEnd);
-    if (!isCarAvailable) {
-      alert('Sorry, this car is not available for the selected dates');
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API}/bookings`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          car_id: carId,
-          start_date: bookingStart,
-          end_date: bookingEnd,
-          user_id: user?.id || user?._id
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert('Booking successful!');
-        setShowCarDropdown(false);
-        setSelectedCar(null);
-        setBookingStart('');
-        setBookingEnd('');
-      } else {
-        alert(data.message || 'Booking failed');
-      }
-    } catch (err) {
-      console.error('bookCar', err);
-      alert('Booking failed');
-    }
-  };
 
   const API = window.location.hostname === 'localhost' 
     ? 'http://localhost:5000/api' 
@@ -419,12 +320,34 @@ function App() {
 
   // logout helper
   const handleLogout = () => {
+    // Clear localStorage FIRST before anything else
+    localStorage.clear(); // Clear everything in localStorage
+    
+    // Clear all state
     setToken('');
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setShowPublicDashboard(false);
+    setShowBooking(false);
+    setShowAllCars(false);
+    setSearchResults([]);
+    
+    // Clear all booking-related state
+    setBookingCarId('');
+    setBookingStart('');
+    setBookingEnd('');
+    setBookingTotal('');
+    
+    // Clear all form state
+    setLoginEmail('');
+    setLoginPassword('');
+    setRegName('');
+    setRegEmail('');
+    setRegPassword('');
+    
+    // Force page reload to ensure clean state
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 100);
   };
 
   // search cars and handle redirection
@@ -629,26 +552,15 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="App">
-      {/* Conditional Navbar Rendering */}
+      {/* Conditional Navbar Rendering - Only show on landing page */}
       <Suspense fallback={<LoadingFallback />}>
-        {!isAuthenticated && !isAdminMode ? (
+        {!isAuthenticated && !isAdminMode && (
           <LandingNavbar 
             onShowForms={setShowForms}
             onShowAdminLogin={() => setIsAdminMode(true)}
             setActiveTab={setActiveTab}
           />
-        ) : isAuthenticated && !isAdminMode ? (
-          <MainNavbar 
-            user={user}
-            token={token}
-            showBookingsPopover={showBookingsPopover}
-            setShowBookingsPopover={setShowBookingsPopover}
-            userBookings={userBookings}
-            setUserBookings={setUserBookings}
-            onLogout={handleLogout}
-            currency={currency}
-          />
-        ) : null}
+        )}
       </Suspense>
 
       {/* Main content branches */}
@@ -669,7 +581,6 @@ function App() {
             <HomePage 
               searchResults={searchResults}
               onSearch={handleSearch}
-              onLoadAllCars={loadAllCars}
               currency={currency}
               getCarImage={getCarImage}
               API={API}
@@ -695,7 +606,7 @@ function App() {
         </>
         ) : (
           <>
-            <Dashboard apiBase={API} token={token} user={user} onLogout={() => { setToken(''); setUser(null); setIsAuthenticated(false); }} />
+            <Dashboard apiBase={API} token={token} user={user} onLogout={handleLogout} />
           
           {/* Booking Modal - only appears in Dashboard context */}
           {showBooking && (
@@ -760,14 +671,19 @@ function App() {
                 <h2>All Available Cars</h2>
                 <div className="cars-grid">
                   {allCarsDisplay.length > 0 ? (
-                    allCarsDisplay.map((car) => (
+                    allCarsDisplay.map((car) => {
+                      const isAvailable = car.is_available ?? car.available ?? true;
+                      return (
                       <div key={car.id || car._id} className="car-card">
-                        <div className="car-image">
+                        <div className="car-image" style={{ position: 'relative' }}>
                           <img 
                             src={`/${car.model || 'car'}.png`} 
                             alt={`${car.make} ${car.model}`}
                             onError={(e) => { e.target.src = '/gtr.png'; }}
                           />
+                          <span className={`availability-badge ${isAvailable ? 'available' : 'unavailable'}`}>
+                            {isAvailable ? '✓ Available' : '✗ Unavailable'}
+                          </span>
                         </div>
                         <div className="car-details">
                           <h3>{car.make} {car.model}</h3>
@@ -775,15 +691,10 @@ function App() {
                           <p className="car-year">{car.year}</p>
                           <p className="car-transmission">{car.transmission}</p>
                           <p className="car-price">₱{car.price_per_day || car.price}/day</p>
-                          <p className="car-availability">
-                            {car.availability || car.is_available ? 
-                              <span style={{color: '#27ae60'}}>✓ Available</span> : 
-                              <span style={{color: '#e74c3c'}}>✗ Not Available</span>
-                            }
-                          </p>
                         </div>
                       </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p style={{gridColumn: '1 / -1', textAlign: 'center', padding: '20px'}}>No cars available</p>
                   )}
@@ -795,6 +706,9 @@ function App() {
         )}
       </Suspense>
       </div>
+      
+      {/* Back to Top Button */}
+      <BackToTop />
     </ErrorBoundary>
   );
 }

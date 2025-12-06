@@ -22,9 +22,13 @@ exports.createBooking = async (req, res) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO bookings (user_id, car_id, start_date, end_date, total_price) VALUES (?, ?, ?, ?, ?)',
-      [user_id, car_id, start_date, end_date, total_price || 0]
+      'INSERT INTO bookings (user_id, car_id, start_date, end_date, total_price, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [user_id, car_id, start_date, end_date, total_price || 0, 'pending']
     );
+    
+    // Automatically mark car as unavailable when booked
+    await db.query('UPDATE cars SET availability = 0 WHERE id = ?', [car_id]);
+    
     res.status(201).json({ message: 'Booking created', bookingId: result.insertId });
   } catch (err) {
     res.status(500).json({ message: 'DB error', error: err.message });
@@ -33,7 +37,7 @@ exports.createBooking = async (req, res) => {
 
 exports.getBookings = async (req, res) => {
   const sql = `
-    SELECT b.id, u.name AS user, c.model AS car, b.start_date, b.end_date, b.total_price
+    SELECT b.id, u.name AS user, c.model AS car, b.start_date, b.end_date, b.total_price, b.status
     FROM bookings b
     LEFT JOIN users u ON b.user_id = u.id
     LEFT JOIN cars c ON b.car_id = c.id
@@ -50,7 +54,7 @@ exports.getBookings = async (req, res) => {
 exports.getUserBookings = async (req, res) => {
   const { user_id } = req.params;
   const sql = `
-    SELECT b.id, c.model AS car, c.type, b.start_date, b.end_date, b.total_price, b.payment_status
+    SELECT b.id, c.model AS car, c.type, b.start_date, b.end_date, b.total_price, b.status, b.payment_status
     FROM bookings b
     LEFT JOIN cars c ON b.car_id = c.id
     WHERE b.user_id = ?
@@ -146,6 +150,10 @@ exports.deleteBooking = async (req, res) => {
 
     const [result] = await db.query('DELETE FROM bookings WHERE id = ?', [id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Booking not found' });
+    
+    // Automatically mark car as available again when booking is cancelled
+    await db.query('UPDATE cars SET availability = 1 WHERE id = ?', [booking.car_id]);
+    
     res.json({ message: 'Booking deleted' });
   } catch (err) {
     res.status(500).json({ message: 'DB error', error: err.message });

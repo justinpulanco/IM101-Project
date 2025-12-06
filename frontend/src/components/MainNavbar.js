@@ -61,12 +61,12 @@ function MainNavbar({
   return (
     <>
       <nav className="navbar navbar-auth">
-        <div className="navbar-top">
-          <div className="navbar-logo">
+        <div className="navbar-top" style={{ justifyContent: 'center', position: 'relative' }}>
+          <div className="navbar-logo" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
             <img src="/download.png" alt="Car2Go U-Drive" className="navbar-logo-img" />
           </div>
 
-          <div className="navbar-right">
+          <div className="navbar-right" style={{ marginLeft: 'auto' }}>
             <button
               title="Your bookings"
               aria-label="Your bookings"

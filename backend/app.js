@@ -16,6 +16,8 @@ const authRoutes = require('./routes/authRoutes');
 const carRoutes = require('./routes/carRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const userRoutes = require('./routes/userRoutes');
+const availabilityRoutes = require('./routes/availabilityRoutes');
+const { startBookingScheduler } = require('./utils/bookingScheduler');
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'build', 'index.html'));
@@ -25,6 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cars', carRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/availability', availabilityRoutes);
 
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
 
@@ -37,4 +40,8 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+  // Start the booking scheduler to auto-release cars after booking ends
+  startBookingScheduler();
+});

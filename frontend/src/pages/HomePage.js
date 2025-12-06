@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import AboutPage from './AboutPage';
 
 function HomePage({ 
   searchResults, 
   onSearch, 
-  onLoadAllCars,
   currency,
   getCarImage,
   API
@@ -68,8 +67,8 @@ function HomePage({
         </div>
       </div>
 
-      <div className="featured-section">
-        <h3>{searchResults.length > 0 ? 'Search Results' : 'All Available Cars'}</h3>
+      <div className="featured-section" style={{ backgroundColor: '#228C22' }}>
+        <h3 style={{ color: '#f7eeeeff' }}>{searchResults.length > 0 ? 'Search Results' : 'All Available Cars'}</h3>
         <div className="cards-grid">
           {searchResults.length > 0 ? (
             // Show filtered search results
@@ -82,42 +81,32 @@ function HomePage({
                 'Nissan Almera': '/nissan almera.png',
                 'Hyundai Accent': '/Hyundai Accent.png',
                 'Ford Ranger': '/Ford Ranger.png',
-                'Honda Civic': '/1995 Honda Civic EG.png',
-                'Mazda 3': '/1993 Mazda RX-7 FD.png',
-                'Nissan Skyline GT-R R34': '/1999 Nissan Skyline GT-R R34.png',
-                'Toyota Supra Mk4': '/1995 Toyota Supra Mk4.png',
-                'Honda Civic EG': '/1995 Honda Civic EG.png',
-                'Dodge Charger': '/1970 Dodge Charger.png',
-                'Chevrolet Camaro': '/1967 Chevrolet Camaro.png',
-                'Nissan Silvia S15': '/2002 Nissan Silvia S15.png',
-                'Nissan 350Z': '/2006 Nissan 350Z.png',
-                'Dodge Challenger SRT8': '/2008 Dodge Challenger SRT8.png',
-                'Mazda RX-7 FD': '/1993 Mazda RX-7 FD.png',
-                'Mitsubishi Eclipse': '/1995 Mitsubishi Eclipse.png',
-                // Alternative names that might come from database
-                '1970 Dodge Charger': '/1970 Dodge Charger.png',
-                '1970 Dodge Charger R/T': '/1970 Dodge Charger.png',
-                '1967 Chevrolet Camaro': '/1967 Chevrolet Camaro.png',
-                '2002 Nissan Silvia S15': '/2002 Nissan Silvia S15.png',
-                '2006 Nissan 350Z': '/2006 Nissan 350Z.png',
-                '2008 Dodge Challenger SRT8': '/2008 Dodge Challenger SRT8.png',
-                '1995 Honda Civic EG': '/1995 Honda Civic EG.png',
-                '1995 Mitsubishi Eclipse': '/1995 Mitsubishi Eclipse.png',
-                '1993 Mazda RX-7 FD': '/1993 Mazda RX-7 FD.png',
-                '1999 Nissan Skyline GT-R R34': '/1999 Nissan Skyline GT-R R34.png',
-                '1995 Toyota Supra Mk4': '/1995 Toyota Supra Mk4.png'
+                'Hyundai Grand Starex': '/Hyundai Grand Starex.png',
+                'Tonery Tiggo 2': '/Tonery Tiggo 2.png',
+                'Toyota Fortuner': '/Toyota Fortuner.png',
+                'Toyota HiAce': '/Toyota Hiace.png',
+                'Toyota Hilux': '/Toyota Hilux.png',
+                'Toyota Scion xB': '/Toyota Scion xB.png',
+                'Kia Picanto': '/Kia Picanto.png'
               };
               
               const carImage = carImageMap[car.model] || '/gtr.png';
               
+              const isAvailable = car.is_available ?? car.available ?? true;
+              
               return (
               <div key={car.id || car._id} className="car-card">
-                <img 
-                  src={carImage} 
-                  onError={(e) => { e.target.src = '/gtr.png' }} 
-                  alt={car.model || 'car'} 
-                  style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <img 
+                    src={carImage} 
+                    onError={(e) => { e.target.src = '/gtr.png' }} 
+                    alt={car.model || 'car'} 
+                    style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
+                  />
+                  <span className={`availability-badge ${isAvailable ? 'available' : 'unavailable'}`}>
+                    {isAvailable ? '✓ Available' : '✗ Unavailable'}
+                  </span>
+                </div>
                 <div className="card-body">
                   <h4>{car.model}</h4>
                   <p className="price">{car.price_per_day || car.price ? `${currency.format(car.price_per_day || car.price)}/day` : '—'}</p>
@@ -127,20 +116,20 @@ function HomePage({
               );
             })
           ) : (
-            // Show all 16 cars when no search
+            // Show all 13 cars when no search
             <>
-            {/* Car 1: Toyota Supra */}
+            {/* Car 1: Toyota Vios */}
             <div className="car-card">
               <img 
-                src="/1995 Toyota Supra Mk4.png"
-                onError={(e) => { e.target.src = '/1995 Toyota Supra Mk4.png' }}
-                alt="1995 Toyota Supra Mk4" 
+                src="/Toyota Vios.png"
+                onError={(e) => { e.target.src = '/Toyota Vios.png' }}
+                alt="Toyota Vios" 
                 style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
               />
               <div className="card-body">
-                <h4>1995 Toyota Supra Mk4</h4>
-                <p className="price">₱2,500/day</p>
-                <p className="location">Manila</p>
+                <h4>Toyota Vios</h4>
+                <p className="price">₱1,500/day</p>
+                <p className="location">Davao</p>
               </div>
             </div>
 
@@ -155,7 +144,7 @@ function HomePage({
               <div className="card-body">
                 <h4>Honda CR-V</h4>
                 <p className="price">₱2,500/day</p>
-                <p className="location">Manila</p>
+                <p className="location">Davao</p>
               </div>
             </div>
 
@@ -170,7 +159,7 @@ function HomePage({
               <div className="card-body">
                 <h4>Nissan Almera</h4>
                 <p className="price">₱1,400/day</p>
-                <p className="location">Manila</p>
+                <p className="location">Davao</p>
               </div>
             </div>
 
@@ -185,161 +174,11 @@ function HomePage({
               <div className="card-body">
                 <h4>Mitsubishi Xpander</h4>
                 <p className="price">₱2,200/day</p>
-                <p className="location">Manila</p>
+                <p className="location">Davao</p>
               </div>
             </div>
 
-            {/* Car 5: Nissan Skyline GT-R */}
-            <div className="car-card">
-              <img 
-                src="/1999 Nissan Skyline GT-R R34.png"
-                onError={(e) => { e.target.src = '/1999 Nissan Skyline GT-R R34.png' }}
-                alt="1999 Nissan Skyline GT-R R34" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>1999 Nissan Skyline GT-R R34</h4>
-                <p className="price">₱4,000/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 6: Toyota Vios */}
-            <div className="car-card">
-              <img 
-                src="/Toyota Vios.png"
-                onError={(e) => { e.target.src = '/Toyota Vios.png' }}
-                alt="Toyota Vios" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>Toyota Vios</h4>
-                <p className="price">₱1,500/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 7: Chevrolet Camaro */}
-            <div className="car-card">
-              <img 
-                src="/1967 Chevrolet Camaro.png"
-                onError={(e) => { e.target.src = '/1967 Chevrolet Camaro.png' }}
-                alt="1967 Chevrolet Camaro" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>1967 Chevrolet Camaro</h4>
-                <p className="price">₱3,500/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 8: Dodge Charger */}
-            <div className="car-card">
-              <img 
-                src="/1970 Dodge Charger.png"
-                onError={(e) => { e.target.src = '/1970 Dodge Charger.png' }}
-                alt="1970 Dodge Charger" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>1970 Dodge Charger</h4>
-                <p className="price">₱3,800/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 9: Mazda RX-7 */}
-            <div className="car-card">
-              <img 
-                src="/1993 Mazda RX-7 FD.png"
-                onError={(e) => { e.target.src = '/1993 Mazda RX-7 FD.png' }}
-                alt="1993 Mazda RX-7 FD" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>1993 Mazda RX-7 FD</h4>
-                <p className="price">₱2,800/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 10: Honda Civic */}
-            <div className="car-card">
-              <img 
-                src="/1995 Honda Civic EG.png"
-                onError={(e) => { e.target.src = '/1995 Honda Civic EG.png' }}
-                alt="1995 Honda Civic EG" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>1995 Honda Civic EG</h4>
-                <p className="price">₱1,800/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 11: Mitsubishi Eclipse */}
-            <div className="car-card">
-              <img 
-                src="/1995 Mitsubishi Eclipse.png"
-                onError={(e) => { e.target.src = '/1995 Mitsubishi Eclipse.png' }}
-                alt="1995 Mitsubishi Eclipse" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>1995 Mitsubishi Eclipse</h4>
-                <p className="price">₱2,000/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 12: Nissan Silvia */}
-            <div className="car-card">
-              <img 
-                src="/2002 Nissan Silvia S15.png"
-                onError={(e) => { e.target.src = '/2002 Nissan Silvia S15.png' }}
-                alt="2002 Nissan Silvia S15" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>2002 Nissan Silvia S15</h4>
-                <p className="price">₱2,600/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 13: Nissan 350Z */}
-            <div className="car-card">
-              <img 
-                src="/2006 Nissan 350Z.png"
-                onError={(e) => { e.target.src = '/2006 Nissan 350Z.png' }}
-                alt="2006 Nissan 350Z" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>2006 Nissan 350Z</h4>
-                <p className="price">₱3,200/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 14: Dodge Challenger */}
-            <div className="car-card">
-              <img 
-                src="/2008 Dodge Challenger SRT8.png"
-                onError={(e) => { e.target.src = '/2008 Dodge Challenger SRT8.png' }}
-                alt="2008 Dodge Challenger SRT8" 
-                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-              />
-              <div className="card-body">
-                <h4>2008 Dodge Challenger SRT8</h4>
-                <p className="price">₱3,900/day</p>
-                <p className="location">Manila</p>
-              </div>
-            </div>
-
-            {/* Car 15: Ford Ranger */}
+            {/* Car 5: Ford Ranger */}
             <div className="car-card">
               <img 
                 src="/Ford Ranger.png"
@@ -349,12 +188,12 @@ function HomePage({
               />
               <div className="card-body">
                 <h4>Ford Ranger</h4>
-                <p className="price">₱2,100/day</p>
-                <p className="location">Manila</p>
+                <p className="price">₱2,700/day</p>
+                <p className="location">Davao</p>
               </div>
             </div>
 
-            {/* Car 16: Hyundai Accent */}
+            {/* Car 6: Hyundai Accent */}
             <div className="car-card">
               <img 
                 src="/Hyundai Accent.png"
@@ -364,8 +203,113 @@ function HomePage({
               />
               <div className="card-body">
                 <h4>Hyundai Accent</h4>
-                <p className="price">₱1,300/day</p>
-                <p className="location">Manila</p>
+                <p className="price">₱1,600/day</p>
+                <p className="location">Davao</p>
+              </div>
+            </div>
+
+            {/* Car 7: Hyundai Grand Starex */}
+            <div className="car-card">
+              <img 
+                src="/Hyundai Grand Starex.png"
+                onError={(e) => { e.target.src = '/Hyundai Grand Starex.png' }}
+                alt="Hyundai Grand Starex" 
+                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
+              />
+              <div className="card-body">
+                <h4>Hyundai Grand Starex</h4>
+                <p className="price">₱2,800/day</p>
+                <p className="location">Davao</p>
+              </div>
+            </div>
+
+            {/* Car 8: Tonery Tiggo 2 */}
+            <div className="car-card">
+              <img 
+                src="/Tonery Tiggo 2.png"
+                onError={(e) => { e.target.src = '/Tonery Tiggo 2.png' }}
+                alt="Tonery Tiggo 2" 
+                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
+              />
+              <div className="card-body">
+                <h4>Tonery Tiggo 2</h4>
+                <p className="price">₱2,200/day</p>
+                <p className="location">Davao</p>
+              </div>
+            </div>
+
+            {/* Car 9: Toyota Fortuner */}
+            <div className="car-card">
+              <img 
+                src="/Toyota Fortuner.png"
+                onError={(e) => { e.target.src = '/Toyota Fortuner.png' }}
+                alt="Toyota Fortuner" 
+                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
+              />
+              <div className="card-body">
+                <h4>Toyota Fortuner</h4>
+                <p className="price">₱3,200/day</p>
+                <p className="location">Davao</p>
+              </div>
+            </div>
+
+            {/* Car 10: Toyota HiAce */}
+            <div className="car-card">
+              <img 
+                src="/Toyota Hiace.png"
+                onError={(e) => { e.target.src = '/Toyota Hiace.png' }}
+                alt="Toyota HiAce" 
+                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
+              />
+              <div className="card-body">
+                <h4>Toyota HiAce</h4>
+                <p className="price">₱2,900/day</p>
+                <p className="location">Davao</p>
+              </div>
+            </div>
+
+            {/* Car 11: Toyota Hilux */}
+            <div className="car-card">
+              <img 
+                src="/Toyota Hilux.png"
+                onError={(e) => { e.target.src = '/Toyota Hilux.png' }}
+                alt="Toyota Hilux" 
+                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
+              />
+              <div className="card-body">
+                <h4>Toyota Hilux</h4>
+                <p className="price">₱2,800/day</p>
+                <p className="location">Davao</p>
+              </div>
+            </div>
+
+            {/* Car 12: Toyota Scion xB */}
+            <div className="car-card">
+              <img 
+                src="/Toyota Scion xB.png"
+                onError={(e) => { e.target.src = '/Toyota Scion xB.png' }}
+                alt="Toyota Scion xB" 
+                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
+              />
+              <div className="card-body">
+                <h4>Toyota Scion xB</h4>
+                <p className="price">₱1,800/day</p>
+                <p className="location">Davao</p>
+              </div>
+            </div>
+
+            {/* Car 13: Kia Picanto */}
+            <div className="car-card">
+              <img 
+                src="/Kia Picanto.png"
+                onError={(e) => { e.target.src = '/Kia Picanto.png' }}
+                alt="Kia Picanto" 
+                style={{ width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f5f5f5' }}
+              />
+              <div className="card-body">
+                <h4>Kia Picanto</h4>
+                <p className="price">₱1,200/day</p>
+                <p className="location">Davao</p>
               </div>
             </div>
             </>

@@ -8,18 +8,25 @@ export const logActivity = async (action, details, user, apiBase, token) => {
     timestamp: new Date().toISOString()
   };
 
-  // Save to localStorage as backup
-  const localLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
-  localLogs.unshift(log); // Add to beginning
-  
-  // Keep only last 100 logs
-  if (localLogs.length > 100) {
-    localLogs.pop();
-  }
-  
-  localStorage.setItem('activityLogs', JSON.stringify(localLogs));
+  console.log('📝 Logging activity:', log);
 
-  // Try to save to backend
+  // Save to localStorage as primary storage
+  try {
+    const localLogs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+    localLogs.unshift(log); // Add to beginning
+    
+    // Keep only last 100 logs
+    if (localLogs.length > 100) {
+      localLogs.pop();
+    }
+    
+    localStorage.setItem('activityLogs', JSON.stringify(localLogs));
+    console.log('✅ Activity log saved to localStorage. Total logs:', localLogs.length);
+  } catch (err) {
+    console.error('❌ Failed to save activity log to localStorage:', err);
+  }
+
+  // Try to save to backend (optional - will fail if endpoint doesn't exist)
   try {
     await fetch(`${apiBase}/activity-logs`, {
       method: 'POST',
@@ -30,8 +37,7 @@ export const logActivity = async (action, details, user, apiBase, token) => {
       body: JSON.stringify(log)
     });
   } catch (err) {
-    console.warn('Failed to save activity log to backend:', err);
-    // Continue anyway - we have localStorage backup
+    // Silently fail - localStorage is our primary storage
   }
 
   return log;

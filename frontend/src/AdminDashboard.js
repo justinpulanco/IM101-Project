@@ -67,125 +67,31 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
 
   // All available car photos
   const allCarPhotos = [
-    '1967 Chevrolet Camaro.png',
-    '1970 Dodge Charger.png',
-    '1993 Mazda RX-7 FD.png',
-    '1995 Honda Civic EG.png',
-    '1995 Mitsubishi Eclipse.png',
-    '1995 Toyota Supra Mk4.png',
-    '1999 Nissan Skyline GT-R R34.png',
-    '2002 Nissan Silvia S15.png',
-    '2006 Nissan 350Z.png',
-    '2008 Dodge Challenger SRT8.png',
-    'Ford Ranger.png',
-    'Honda CR-V.png',
-    'Hyundai Accent.png',
-    'Mitsubishi Xpander.webp',
-    'nissan almera.png',
     'Toyota Vios.png',
+    'Honda CR-V.png',
+    'nissan almera.png',
+    'Mitsubishi Xpander.webp',
+    'Ford Ranger.png',
+    'Hyundai Accent.png',
+    'Hyundai Grand Starex.png',
+    'Tonery Tiggo 2.png',
+    'Toyota Fortuner.png',
+    'Toyota Hiace.png',
+    'Toyota Hilux.png',
+    'Toyota Scion xB.png',
+    'Kia Picanto.png',
   ];
 
   
 
-  // Function to get car make from model and year
+  // Function to get car make (brand)
   const getCarMake = (car) => {
-    if (car.brand) return car.brand;
-    
-    const model = car.model?.toLowerCase() || '';
-    
-    // Map of car filenames to their makes and years
-    const carMappings = {
-      // Toyota
-      'toyota vios.png': { make: 'Toyota', year: 2002 },
-      'toyota supra mk4.png': { make: 'Toyota', year: 1995 },
-      
-      // Honda
-      'honda civic eg.png': { make: 'Honda', year: 1995 },
-      'honda cr-v.png': { make: 'Honda', year: 2018 },
-      
-      // Nissan
-      'nissan almera.png': { make: 'Nissan', year: 1990 },
-      'nissan skyline gtr r34.png': { make: 'Nissan', year: 1994 },
-      'nissan silvia s15.png': { make: 'Nissan', year: 1993 },
-      'nissan 350z.png': { make: 'Nissan', year: 1999 },
-      
-      // Mitsubishi
-      'mitsubishi eclipse.png': { make: 'Mitsubishi', year: 1990 },
-      'mitsubishi xpander.webp': { make: 'Mitsubishi', year: 1992 },
-      
-      // Ford
-      'ford ranger.png': { make: 'Ford', year: 1970 },
-      
-      // Hyundai
-      'hyundai accent.png': { make: 'Hyundai', year: 1991 },
-      
-      // Mazda
-      'mazda rx-7 fd.png': { make: 'Mazda', year: 1993 },
-      
-      // Dodge
-      'dodge challenger srt8.png': { make: 'Dodge', year: 2008 },
-      'dodge charger.png': { make: 'Dodge', year: 1970 },
-      
-      // Chevrolet
-      'chevrolet camaro.png': { make: 'Chevrolet', year: 1967 }
-    };
-    
-    // Try to find exact match by filename first
-    const filename = model.toLowerCase() + (model.endsWith('.png') || model.endsWith('.webp') ? '' : '.png');
-    if (carMappings[filename]) {
-      return carMappings[filename].make;
-    }
-    
-    // If no exact match, try partial matching
-    for (const [key, value] of Object.entries(carMappings)) {
-      if (model.includes(key.split('.')[0])) {
-        return value.make;
-      }
-    }
-    
-    return 'N/A';
+    return car.make || car.brand || 'N/A';
   };
   
-  // Function to get car year from model
+  // Function to get car year
   const getCarYear = (car) => {
-    if (car.year) return car.year;
-    
-    const model = car.model?.toLowerCase() || '';
-    
-    // Same mapping as above but for years
-    const yearMappings = {
-      'toyota vios.png': 2002,
-      'toyota supra mk4.png': 1995,
-      'honda civic eg.png': 1995,
-      'honda cr-v.png': 2018,
-      'nissan almera.png': 1990,
-      'nissan skyline gtr r34.png': 1994,
-      'nissan silvia s15.png': 1993,
-      'nissan 350z.png': 1999,
-      'mitsubishi eclipse.png': 1990,
-      'mitsubishi xpander.webp': 1992,
-      'ford ranger.png': 1970,
-      'hyundai accent.png': 1991,
-      'mazda rx-7 fd.png': 1993,
-      'dodge challenger srt8.png': 2008,
-      'dodge charger.png': 1970,
-      'chevrolet camaro.png': 1967
-    };
-    
-    // Try to find exact match by filename first
-    const filename = model.toLowerCase() + (model.endsWith('.png') || model.endsWith('.webp') ? '' : '.png');
-    if (yearMappings[filename] !== undefined) {
-      return yearMappings[filename];
-    }
-    
-    // If no exact match, try partial matching
-    for (const [key, year] of Object.entries(yearMappings)) {
-      if (model.includes(key.split('.')[0])) {
-        return year;
-      }
-    }
-    
-    return 'N/A';
+    return car.year || 'N/A';
   };
 
   // Function to get clean car name from filename
@@ -197,6 +103,7 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
     loadCars();
     loadUsers();
     loadBookings();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadCars = async () => {
@@ -241,80 +148,46 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
     }
   };
 
-  const handleToggleCarAvailability = async (carId, currentStatus) => {
+  // Handle direct toggle of car availability
+  const handleDirectToggle = async (carId, targetStatus) => {
     const car = cars.find(c => c.id === carId);
     const carModel = car?.model || 'Unknown Car';
+    const statusText = targetStatus ? 'available' : 'unavailable';
     
     setConfirmDialog({
       isOpen: true,
-      title: 'Toggle Car Availability',
-      message: `Are you sure you want to mark "${carModel}" as ${currentStatus ? 'unavailable' : 'available'}?`,
+      title: 'Update Car Availability',
+      message: `Mark "${carModel}" as ${statusText}?`,
       type: 'warning',
       onConfirm: async () => {
         setConfirmDialog({ ...confirmDialog, isOpen: false });
         setLoading(prev => ({ ...prev, action: 'toggle' }));
-        const originalCars = [...cars];
         
         try {
-          setCars(prevCars => 
-            prevCars.map(c => 
-              c.id === carId 
-                ? { 
-                    ...c, 
-                    is_available: !currentStatus,
-                    available: !currentStatus 
-                  } 
-                : c
-            )
-          );
-
           const res = await fetch(`${apiBase}/cars/${carId}`, {
             method: 'PUT',
-            headers: { 
-              'Content-Type': 'application/json', 
-              ...authHeaders 
-            },
-            body: JSON.stringify({ 
-              availability: currentStatus ? 0 : 1,
-            }),
+            headers: { 'Content-Type': 'application/json', ...authHeaders },
+            body: JSON.stringify({ availability: targetStatus ? 1 : 0 }),
           });
-
+          
           if (!res.ok) {
             const error = await res.json().catch(() => ({}));
             throw new Error(error.message || 'Failed to update car availability');
           }
-
-          const updatedCar = await res.json();
           
-          setCars(prevCars => 
-            prevCars.map(c => 
-              c.id === carId 
-                ? { 
-                    ...c, 
-                    is_available: updatedCar.is_available || !currentStatus,
-                    available: updatedCar.available || !currentStatus
-                  } 
-                : c
-            )
-          );
-          
-          // Log activity
           await logActivity(
-            ActivityActions.TOGGLE_CAR(carModel, !currentStatus),
+            ActivityActions.TOGGLE_CAR(carModel, targetStatus),
             `Car ID: ${carId}`,
             'Admin',
             apiBase,
             token
           );
           
-          setTimeout(() => {
-            alert(`Car marked as ${!currentStatus ? 'available' : 'unavailable'} successfully!`);
-          }, 100);
-          
+          await loadCars();
+          alert(`✅ Car marked as ${statusText}!`);
         } catch (err) {
-          setCars(originalCars);
           console.error('Error toggling car availability:', err);
-          alert(`Error: ${err.message || 'Failed to update car availability. Please try again.'}`);
+          alert(`❌ Error: ${err.message}`);
         } finally {
           setLoading(prev => ({ ...prev, action: null }));
         }
@@ -323,6 +196,94 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
   };
 
   const [deletingUser, setDeletingUser] = useState(null);
+
+  // Handle booking confirmation/cancellation
+  const handleBookingAction = async (bookingId, newStatus) => {
+    const booking = bookings.find(b => b.id === bookingId);
+    const actionText = newStatus === 'confirmed' ? 'confirm' : 'cancel';
+    
+    setConfirmDialog({
+      isOpen: true,
+      title: `${actionText.charAt(0).toUpperCase() + actionText.slice(1)} Booking`,
+      message: `Are you sure you want to ${actionText} booking #${bookingId}?`,
+      type: newStatus === 'confirmed' ? 'info' : 'danger',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        setLoading(prev => ({ ...prev, action: 'booking' }));
+        
+        try {
+          const res = await fetch(`${apiBase}/bookings/${bookingId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...authHeaders },
+            body: JSON.stringify({ status: newStatus }),
+          });
+          
+          if (!res.ok) {
+            const error = await res.json().catch(() => ({}));
+            throw new Error(error.message || 'Failed to update booking status');
+          }
+          
+          await logActivity(
+            `${actionText.charAt(0).toUpperCase() + actionText.slice(1)}ed booking #${bookingId}`,
+            `Booking for ${booking?.car || 'car'} by ${booking?.user || 'user'}`,
+            'Admin',
+            apiBase,
+            token
+          );
+          
+          await loadBookings();
+          alert(`✅ Booking ${actionText}ed successfully!`);
+        } catch (err) {
+          console.error('Error updating booking status:', err);
+          alert(`❌ Error: ${err.message}`);
+        } finally {
+          setLoading(prev => ({ ...prev, action: null }));
+        }
+      }
+    });
+  };
+
+  // Handle deleting completed bookings
+  const handleDeleteBooking = async (bookingId, carName, userName) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Completed Booking',
+      message: `Are you sure you want to delete booking #${bookingId}?\n\nCar: ${carName || 'N/A'}\nUser: ${userName || 'N/A'}\n\nThis action cannot be undone.`,
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        setLoading(prev => ({ ...prev, action: 'delete-booking' }));
+        
+        try {
+          const res = await fetch(`${apiBase}/bookings/${bookingId}`, {
+            method: 'DELETE',
+            headers: authHeaders,
+          });
+          
+          if (!res.ok) {
+            const error = await res.json().catch(() => ({}));
+            throw new Error(error.message || 'Failed to delete booking');
+          }
+          
+          await logActivity(
+            ActivityActions.DELETE_BOOKING(bookingId),
+            `Deleted completed booking for ${carName || 'car'} by ${userName || 'user'}`,
+            'Admin',
+            apiBase,
+            token
+          );
+          
+          await loadBookings();
+          alert(`✅ Booking #${bookingId} deleted successfully!`);
+        } catch (err) {
+          console.error('Error deleting booking:', err);
+          alert(`❌ Error: ${err.message}`);
+        } finally {
+          setLoading(prev => ({ ...prev, action: null }));
+        }
+      }
+    });
+  };
 
   const handleDeleteUser = async (userId) => {
     const user = users.find(u => u.id === userId);
@@ -482,7 +443,7 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
                     <th>Model</th>
                     <th>Year</th>
                     <th>Price/Day</th>
-                    <th>Available</th>
+                    <th>Current Status</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -495,21 +456,50 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
                       <td>{getCarYear(car)}</td>
                       <td>₱{car.price_per_day || 0}</td>
                       <td>
-                        <span className={car.is_available ? 'available' : 'unavailable'}>
-                          {car.is_available ? '✓ Yes' : '✗ No'}
+                        <span className={car.is_available ? 'available' : 'unavailable'} style={{ fontWeight: '600', fontSize: '14px' }}>
+                          {car.is_available ? '✓ Available' : '✗ Unavailable'}
                         </span>
                       </td>
-                      <td>
-                        <button
-                          onClick={() => handleToggleCarAvailability(car.id, car.is_available)}
-                          className="action-btn"
-                          disabled={loading.action === 'toggle'}
-                          style={{ minWidth: '80px' }}
-                        >
-                          {loading.action === 'toggle' ? (
-                            <LoadingSpinner size={16} color="#fff" />
-                          ) : 'Toggle'}
-                        </button>
+                      <td style={{ textAlign: 'center', padding: '8px' }}>
+                        {car.is_available ? (
+                          <button
+                            onClick={() => handleDirectToggle(car.id, false)}
+                            className="action-btn mark-unavailable"
+                            disabled={loading.action === 'toggle'}
+                            style={{
+                              padding: '8px 16px',
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              border: 'none',
+                              backgroundColor: '#f8d7da',
+                              color: '#721c24',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            Mark as Unavailable
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleDirectToggle(car.id, true)}
+                            className="action-btn mark-available"
+                            disabled={loading.action === 'toggle'}
+                            style={{
+                              padding: '8px 16px',
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              border: 'none',
+                              backgroundColor: '#d4edda',
+                              color: '#155724',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            Mark as Available
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -569,7 +559,31 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
         <div className="admin-section">
           <h2>All Bookings</h2>
           {bookings.length === 0 ? (
-            <p>No bookings found</p>
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px',
+              margin: '20px 0'
+            }}>
+              <div style={{ fontSize: '64px', marginBottom: '20px' }}>📋</div>
+              <p style={{ 
+                margin: '0 0 10px 0', 
+                color: '#000', 
+                fontWeight: '700', 
+                fontSize: '18px' 
+              }}>
+                No bookings found
+              </p>
+              <p style={{ 
+                margin: '0', 
+                color: '#666', 
+                fontSize: '14px', 
+                fontWeight: '400' 
+              }}>
+                Bookings will appear here once users start making reservations
+              </p>
+            </div>
           ) : (
             <div className="admin-table">
               <table>
@@ -581,19 +595,96 @@ export default function AdminDashboard({ apiBase, token, onLogout }) {
                     <th>Start Date</th>
                     <th>End Date</th>
                     <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {bookings.map((booking) => (
-                    <tr key={booking.id}>
-                      <td>{booking.id}</td>
-                      <td>{booking.user || 'N/A'}</td>
-                      <td>{booking.car || 'N/A'}</td>
-                      <td>{booking.start_date ? new Date(booking.start_date).toLocaleDateString() : 'N/A'}</td>
-                      <td>{booking.end_date ? new Date(booking.end_date).toLocaleDateString() : 'N/A'}</td>
-                      <td>₱{booking.total_price || 0}</td>
-                    </tr>
-                  ))}
+                  {bookings.map((booking) => {
+                    const status = booking.status || 'pending';
+                    return (
+                      <tr key={booking.id}>
+                        <td>{booking.id}</td>
+                        <td>{booking.user || 'N/A'}</td>
+                        <td>{booking.car || 'N/A'}</td>
+                        <td>{booking.start_date ? new Date(booking.start_date).toLocaleDateString() : 'N/A'}</td>
+                        <td>{booking.end_date ? new Date(booking.end_date).toLocaleDateString() : 'N/A'}</td>
+                        <td>₱{booking.total_price || 0}</td>
+                        <td>
+                          <span 
+                            className={`booking-status ${status}`}
+                            style={{
+                              padding: '4px 12px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              textTransform: 'capitalize',
+                              backgroundColor: status === 'confirmed' ? '#d4edda' : status === 'cancelled' ? '#f8d7da' : '#fff3cd',
+                              color: status === 'confirmed' ? '#155724' : status === 'cancelled' ? '#721c24' : '#856404'
+                            }}
+                          >
+                            {status}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          {status === 'pending' && (
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                              <button
+                                onClick={() => handleBookingAction(booking.id, 'confirmed')}
+                                className="action-btn"
+                                style={{
+                                  padding: '6px 12px',
+                                  fontSize: '12px',
+                                  backgroundColor: '#28a745',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                ✓ Confirm
+                              </button>
+                              <button
+                                onClick={() => handleBookingAction(booking.id, 'cancelled')}
+                                className="action-btn"
+                                style={{
+                                  padding: '6px 12px',
+                                  fontSize: '12px',
+                                  backgroundColor: '#dc3545',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                ✗ Cancel
+                              </button>
+                            </div>
+                          )}
+                          {status === 'completed' && (
+                            <button
+                              onClick={() => handleDeleteBooking(booking.id, booking.car, booking.user)}
+                              className="action-btn delete-btn"
+                              style={{
+                                padding: '6px 12px',
+                                fontSize: '12px',
+                                backgroundColor: '#6c757d',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              🗑️ Delete
+                            </button>
+                          )}
+                          {status !== 'pending' && status !== 'completed' && (
+                            <span style={{ color: '#999', fontSize: '12px' }}>—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

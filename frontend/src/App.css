@@ -37,6 +37,12 @@ body {
   flex-direction: column;
 }
 
+/* HomePage Layout - Gradient Background (CAR2GO Brand Colors) */
+.layout {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #CC0000 0%, #228C22 60%, #228C22 100%);
+}
+
 /* Main content wrapper */
 .main-content {
   flex: 1;
@@ -128,8 +134,10 @@ button:not(:disabled) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* slightly reduced inner padding to match overall shrink */
-  padding: 10px 22px;
+  /* Very thin navbar for main page */
+  padding: 6px 24px;
+  min-height: 55px;
+  max-height: 55px;
 }
 
 /* Smooth transitions for navbar elements when switching auth states */
@@ -160,6 +168,12 @@ button:not(:disabled) {
   color: var(--brand-green);
   letter-spacing: 1px;
   min-width: 100px;
+}
+
+.navbar-logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .navbar-links {
@@ -536,24 +550,35 @@ button:not(:disabled) {
   background: var(--brand-red);
   border: none;
   color: #fff;
-  padding: 9px 14px;
-  border-radius: 7px;
+  padding: 12px 18px;
+  border-radius: 8px;
   font-weight: 700;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 18px;
+  min-width: 50px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
 }
 
 /* SEARCH RESULTS SECTION */
 .featured-section {
   padding: 40px 20px;
-  background: linear-gradient(135deg, #c5a524 0%, #67883d 100%);
+  background: transparent;
   margin: 40px 0;
   border-radius: 12px;
 }
 
 .featured-section h3 {
   font-size: 28px;
-  color: #333;
+  color: #fff;
   margin-bottom: 30px;
   font-weight: 700;
   text-align: center;
@@ -568,13 +593,13 @@ button:not(:disabled) {
 }
 
 .car-card {
-  background: #fff;
+  background: linear-gradient(180deg, #a3b18a 100%, #ffffff 35%);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   cursor: pointer;
-  border: 1px solid #f0f0f0;
+  border: 1px solid #af2424;
 }
 
 .car-card:hover {
@@ -618,8 +643,9 @@ button:not(:disabled) {
 }
 
 .card-body p.location {
-  color: #999;
+  color: #000000;
   font-size: 12px;
+  font-weight: 600;
 }
 
 .hero-content {
@@ -708,7 +734,7 @@ button:not(:disabled) {
   width: 35px;
   height: 32px;
   border: none;
-  background: #f0f0f0;
+  background: #c01120;
   border-radius: 18px;
   font-size: 17px;
   cursor: pointer;
@@ -732,7 +758,7 @@ button:not(:disabled) {
   background: none;
   font-size: 14px;
   font-weight: 600;
-  color: #999;
+  color: #070505;
   cursor: pointer;
   border-bottom: 3px solid transparent;
 }
@@ -760,6 +786,8 @@ button:not(:disabled) {
 .modal-form h2 {
   margin-bottom: 16px;
   font-size: 16px;
+  color: #000;
+  font-weight: 700;
 }
 
 .modal-form form {
@@ -773,6 +801,13 @@ button:not(:disabled) {
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.modal-form input:focus {
+  outline: none;
+  border-color: #8B0000;
+  box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
 }
 
 .modal-form button[type="submit"] {
@@ -1049,6 +1084,7 @@ button:not(:disabled) {
 /* Make numeric inputs look consistent and clearly readable */
 input[type="number"].card-input,
 input[type="text"].card-input {
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 
@@ -5364,7 +5400,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 32px;
+  padding: 24px 32px;
+  min-height: 80px;
   flex-wrap: nowrap;
   width: 100%;
 }
@@ -6321,4 +6358,943 @@ body {
 .navbar-right {
   order: 3;
   margin-left: auto;
+}
+
+/* --------------------
+   Sticky Dashboard Header (Separate from Landing Navbar)
+-------------------- */
+.dashboard-header-unique {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  padding: 45px 40px 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid #8B0000;
+  margin-bottom: 60px;
+  overflow: visible;
+}
+
+.dashboard-header-unique .dashboard-header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+/* Logo in Center Circle - Extends below navbar (Dashboard Only) */
+.dashboard-header-unique .dashboard-logo-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -25%);
+  z-index: 1001;
+}
+
+.dashboard-header-unique .dashboard-logo-circle {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  border: 5px solid #8B0000;
+}
+
+.dashboard-header-unique .dashboard-logo {
+  height: 90px;
+  width: auto;
+  object-fit: contain;
+}
+
+.dashboard-header-unique .dashboard-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-header-unique .dashboard-header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.dashboard-header-unique .dashboard-user {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.dashboard-bookings-btn,
+.dashboard-logout-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-bookings-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  position: relative;
+}
+
+.bookings-icon {
+  font-size: 18px;
+}
+
+.bookings-text {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.bookings-badge {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.dashboard-bookings-btn:hover {
+  background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+}
+
+.dashboard-bookings-btn:hover .bookings-badge {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.dashboard-logout-btn {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  font-size: 13px;
+}
+
+.dashboard-logout-btn:hover {
+  background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+}
+
+/* Responsive Dashboard Header */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .dashboard-header-left {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .dashboard-header-right {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .dashboard-logo {
+    height: 40px;
+  }
+  
+  .dashboard-title {
+    font-size: 20px;
+  }
+  
+  .dashboard-user {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+  
+  .dashboard-bookings-btn,
+  .dashboard-logout-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: 12px 15px;
+  }
+  
+  .dashboard-header-left {
+    gap: 10px;
+  }
+  
+  .dashboard-logo {
+    height: 35px;
+  }
+  
+  .dashboard-title {
+    font-size: 18px;
+  }
+  
+  .dashboard-user {
+    display: none; /* Hide on very small screens */
+  }
+}
+
+/* --------------------
+   Bookings Popover (Dashboard)
+-------------------- */
+.bookings-popover {
+  position: fixed;
+  top: 120px;
+  right: 40px;
+  width: 400px;
+  max-height: calc(100vh - 140px);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  z-index: 1002;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bookings-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-bottom: 2px solid #8B0000;
+}
+
+.bookings-popover-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-popover-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.close-popover-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(90deg);
+}
+
+.bookings-popover-content {
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.no-bookings {
+  text-align: center;
+  color: #666;
+  padding: 40px 20px;
+  font-size: 15px;
+}
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.booking-item {
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #a3b18a 0%, #ffffff 100%);
+  border-radius: 8px;
+  border: 1px solid #8a9a6f;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.booking-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #28a745 0%, #20c997 100%);
+}
+
+.booking-item:hover {
+  border-color: #28a745;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.12);
+}
+
+.booking-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 6px;
+}
+
+.booking-car-name {
+  font-size: 14px;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.booking-car-name strong {
+  font-size: 14px;
+  color: #1a1a1a;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.booking-dates {
+  font-size: 11px;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.booking-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #28a745;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.booking-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  width: fit-content;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.booking-status.pending {
+  background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+  color: #333;
+}
+
+.booking-status.confirmed {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+}
+
+.booking-status.cancelled {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+}
+
+.booking-status.completed {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  color: white;
+}
+
+.booking-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #e9ecef;
+}
+
+.cancel-booking-btn {
+  padding: 5px 12px;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 1px 3px rgba(220, 53, 69, 0.15);
+}
+
+.cancel-booking-btn:hover {
+  background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* Responsive Bookings Popover */
+@media (max-width: 768px) {
+  .bookings-popover {
+    right: 20px;
+    left: 20px;
+    width: auto;
+    top: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bookings-popover {
+    right: 10px;
+    left: 10px;
+    top: 70px;
+    max-height: 500px;
+  }
+  
+  .bookings-popover-content {
+    padding: 15px;
+    max-height: 400px;
+  }
+}
+
+/* ==========================================
+   DESIGN IMPROVEMENTS - ALL 10 FEATURES
+   ========================================== */
+
+/* 1. Smooth Scroll Behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 2. Enhanced Car Card Hover Effects */
+.car-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.car-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(139, 0, 0, 0.3), 0 0 20px rgba(40, 167, 69, 0.2);
+  border-color: #28a745;
+}
+
+/* 3. Loading Skeleton Screens */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  height: 300px;
+  margin: 20px;
+}
+
+.skeleton-text {
+  height: 20px;
+  margin: 10px 0;
+  width: 80%;
+}
+
+/* 4. Glassmorphism Effects (Exclude Auth Modal) */
+.bookings-popover,
+.confirm-dialog {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Keep auth modal pure white */
+.auth-modal,
+.modal-content {
+  background: #ffffff !important;
+}
+
+/* 5. Micro-animations */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes checkmark {
+  0% { transform: scale(0) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
+button:active {
+  animation: pulse 0.3s ease;
+}
+
+.success-icon {
+  animation: checkmark 0.5s ease;
+}
+
+.icon-bounce:hover {
+  animation: bounce 0.6s ease infinite;
+}
+
+/* 6. Gradient Backgrounds */
+.hero-section,
+.landing-hero {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(139, 0, 0, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 50%, rgba(40, 167, 69, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.features-section {
+  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 50%, #f8f9fa 100%);
+}
+
+/* 7. Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #8B0000 0%, #28a745 100%);
+  border-radius: 10px;
+  border: 2px solid #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #a00000 0%, #20c997 100%);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #8B0000 #f1f1f1;
+}
+
+/* 8. Floating Back to Top Button */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #8B0000 0%, #28a745 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  transform: translateY(-5px) scale(1.1);
+  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.4);
+}
+
+/* 9. Toast Notifications Position (Top Right) */
+.Toastify__toast-container {
+  top: 80px !important;
+  right: 20px !important;
+}
+
+.Toastify__toast {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(10px);
+}
+
+.Toastify__toast--success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+}
+
+.Toastify__toast--info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+}
+
+/* 10. Card Shadows on Scroll (Progressive Enhancement) */
+.scroll-shadow {
+  transition: box-shadow 0.3s ease;
+}
+
+.scroll-shadow.scrolled-light {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.scroll-shadow.scrolled-medium {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.scroll-shadow.scrolled-heavy {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Additional Enhancements */
+
+/* Smooth transitions for all interactive elements */
+button, a, input, select, textarea, .car-card, .booking-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus visible for better accessibility */
+*:focus-visible {
+  outline: 3px solid #28a745;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Improved button hover states */
+button:not(:disabled):hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Card entrance animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Stagger animation for multiple cards */
+.animate-in:nth-child(1) { animation-delay: 0.1s; }
+.animate-in:nth-child(2) { animation-delay: 0.2s; }
+.animate-in:nth-child(3) { animation-delay: 0.3s; }
+.animate-in:nth-child(4) { animation-delay: 0.4s; }
+.animate-in:nth-child(5) { animation-delay: 0.5s; }
+.animate-in:nth-child(6) { animation-delay: 0.6s; }
+
+/* Shimmer effect for loading states */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .back-to-top {
+    width: 45px;
+    height: 45px;
+    bottom: 20px;
+    right: 20px;
+    font-size: 20px;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .back-to-top {
+    width: 40px;
+    height: 40px;
+    bottom: 15px;
+    right: 15px;
+  }
+}
+
+/* --------------------
+   Bulk Action Buttons (Admin)
+-------------------- */
+.bulk-action-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bulk-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.available-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+}
+
+.available-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.unavailable-btn {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  color: #333;
+}
+
+.unavailable-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e0a800 0%, #f57c00 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+}
+
+.apply-btn {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  font-size: 15px;
+  padding: 12px 24px;
+}
+
+.apply-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+.car-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #007bff;
+}
+
+.selected-row {
+  background-color: #e3f2fd !important;
+  border-left: 4px solid #007bff !important;
+}
+
+.admin-table tr.selected-row:hover {
+  background-color: #bbdefb !important;
+}
+
+.admin-table th:first-child,
+.admin-table td:first-child {
+  text-align: center;
+  width: 60px;
+}
+
+/* --------------------
+   Admin Table Improvements
+-------------------- */
+.admin-table table {
+  table-layout: auto;
+  white-space: nowrap;
+}
+
+.admin-table th,
+.admin-table td {
+  vertical-align: middle;
+}
+
+/* Actions column specific styling */
+.admin-table th:last-child {
+  text-align: center;
+  min-width: 220px;
+}
+
+.admin-table td:last-child {
+  text-align: center;
+  padding: 8px;
+}
+
+/* Make action buttons smaller and cleaner */
+.action-btn.mark-available,
+.action-btn.mark-unavailable {
+  padding: 6px 10px;
+  font-size: 11px;
+  min-width: 90px;
+  white-space: nowrap;
+}
+
+/* Responsive table for smaller screens */
+@media (max-width: 1200px) {
+  .admin-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .admin-table table {
+    min-width: 900px;
+  }
+}
+
+@media (max-width: 768px) {
+  .action-btn.mark-available,
+  .action-btn.mark-unavailable {
+    padding: 5px 8px;
+    font-size: 10px;
+    min-width: 75px;
+  }
+}
+
+/* --------------------
+   Unavailable Car Overlay
+-------------------- */
+.rental-card-unavailable {
+  position: relative;
+}
+
+.rental-unavailable-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.rental-unavailable-badge {
+  background: rgba(220, 53, 69, 0.95);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.rental-unavailable-icon {
+  font-size: 32px;
+}
+
+.rental-unavailable-text {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.rental-btn-disabled {
+  background-color: #6c757d !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+.rental-btn-disabled:hover {
+  background-color: #6c757d !important;
+  transform: none !important;
 }
