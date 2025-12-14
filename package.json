@@ -1,4 +1,10 @@
 {
+  "name": "car-rental-app",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd frontend && npm run build",
+    "install": "cd frontend && npm install"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
